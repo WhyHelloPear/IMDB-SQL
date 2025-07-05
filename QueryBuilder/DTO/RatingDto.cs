@@ -1,4 +1,6 @@
-﻿namespace IMDB_DB
+﻿using IMDB_DB.Builders;
+
+namespace IMDB_DB.DTO
 {
     public class RatingDto
     {
@@ -7,11 +9,11 @@
             string[] t = dataLine.Split( delimiter );
 
             ImdbId = t[RatingFileSchema.ImdbIdIndex];
-            if(decimal.TryParse(t[RatingFileSchema.RatingIndex], out decimal rating ) ) {
+            if( decimal.TryParse( t[RatingFileSchema.RatingIndex], out decimal rating ) ) {
                 Rating = rating;
             }
 
-            if(int.TryParse(t[RatingFileSchema.NumVotesIndex], out int numVotes ) ) {
+            if( int.TryParse( t[RatingFileSchema.NumVotesIndex], out int numVotes ) ) {
                 NumVotes = numVotes;
             }
         }
