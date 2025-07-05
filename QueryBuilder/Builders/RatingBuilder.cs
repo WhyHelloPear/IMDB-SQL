@@ -46,8 +46,6 @@
             if( valueBatch.Count() > 0 ) {
                 WriteBatchFile( valueBatch, currentBatchCount );
             }
-
-            Console.WriteLine( "Done." );
         }
 
         private void WriteBatchFile( RatingDto[] values, int currentBatchCount )

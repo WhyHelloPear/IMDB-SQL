@@ -1,0 +1,46 @@
+services:
+  database:
+    image: mariadb:latest
+    container_name: PeardeVault_DB
+    environment:
+      MYSQL_ROOT_PASSWORD: {{SECRET_DB_ROOTPASSWORD}}
+    volumes:
+      - peardevault_db:/var/lib/mysql
+      - ./DB_Setup.sql:/docker-entrypoint-initdb.d/DB_Setup.sql
+    ports:
+      - "3306:3306"
+    networks:
+      - PeardeVaultDB_DockerNetwork
+
+  db-ui:
+    image: phpmyadmin/phpmyadmin
+    container_name: PeardeVault_DB_GUI
+    environment:
+      PMA_HOST: PeardeVault_DB
+      PMA_PORT: 3306
+      PMA_USER: admin_de_pear
+      PMA_PASSWORD: {{SECRET_DB_PASSWORD}}
+    ports:
+      - "8082:80"
+    volumes:
+      - ./config.inc.php:/etc/phpmyadmin/config.inc.php
+    networks:
+      - PeardeVaultDB_DockerNetwork
+    depends_on:
+      - database
+
+
+
+
+
+networks:
+  PeardeVaultDB_DockerNetwork:
+    driver: bridge
+
+volumes:
+  peardevault_db:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/whyhellopear/HDD_Storage_A/peardevault_db

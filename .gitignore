@@ -1,3 +1,4 @@
 QueryBuilder/bin
 QueryBuilder/obj
 .vs
+secrets.env
