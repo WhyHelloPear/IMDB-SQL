@@ -1,4 +1,4 @@
 file
 docker-compose.yml
 config.inc.php
-MigrationScripts/V1__Initial_Setup.sql
+.\SQL\DB_Setup.sql

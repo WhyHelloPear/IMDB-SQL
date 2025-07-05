@@ -1,46 +1,42 @@
 services:
   database:
     image: mariadb:latest
-    container_name: PeardeVault_DB
+    container_name: IMDB_DB
     environment:
       MYSQL_ROOT_PASSWORD: {{SECRET_DB_ROOTPASSWORD}}
     volumes:
-      - peardevault_db:/var/lib/mysql
-      - ./DB_Setup.sql:/docker-entrypoint-initdb.d/DB_Setup.sql
+      - imdb_db_storage:/var/lib/mysql
+      - ./SQL/DB_Setup.sql:/docker-entrypoint-initdb.d/DB_Setup.sql
     ports:
       - "3306:3306"
     networks:
-      - PeardeVaultDB_DockerNetwork
+      - IMDB_DockerNetwork
 
   db-ui:
     image: phpmyadmin/phpmyadmin
-    container_name: PeardeVault_DB_GUI
+    container_name: IMDB_DB_GUI
     environment:
-      PMA_HOST: PeardeVault_DB
+      PMA_HOST: IMDB_DB
       PMA_PORT: 3306
-      PMA_USER: admin_de_pear
+      PMA_USER: imdb_admin
       PMA_PASSWORD: {{SECRET_DB_PASSWORD}}
     ports:
-      - "8082:80"
+      - "4080:80"
     volumes:
       - ./config.inc.php:/etc/phpmyadmin/config.inc.php
     networks:
-      - PeardeVaultDB_DockerNetwork
+      - IMDB_DockerNetwork
     depends_on:
       - database
 
-
-
-
-
 networks:
-  PeardeVaultDB_DockerNetwork:
+  IMDB_DockerNetwork:
     driver: bridge
 
 volumes:
-  peardevault_db:
+  imdb_db_storage:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /home/whyhellopear/HDD_Storage_A/peardevault_db
+      device: D:/IMDB_SQL/sql
