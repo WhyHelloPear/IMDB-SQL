@@ -24,4 +24,13 @@ CREATE TABLE TitleRating (
     CONSTRAINT fk_TitleRating_MediaTitle_ImdbId FOREIGN KEY (ImdbId) REFERENCES MediaTitle(ImdbId)
 );
 
+CREATE TABLE Person (
+    PersonImdbId VARCHAR(12) PRIMARY KEY,
+    PrimaryName VARCHAR(255),
+    BirthYear VARCHAR(4),
+    DeathYear VARCHAR(4),
+    PrimaryProfession VARCHAR(255),
+    KnownForTitles VARCHAR(255)
+);
+
 FLUSH PRIVILEGES;

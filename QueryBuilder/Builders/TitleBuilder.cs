@@ -110,9 +110,5 @@ namespace IMDB_DB.Builders
         public const string EndYearColName = "EndYear";
         public const string RuntimeMinutesColName = "RuntimeMinutes";
         public const string GenresColName = "Genres";
-
-        public const string ImdbIdColType = "VARCHAR(16)";
-        public const string RatingColType = "DECIMAL UNSIGNED ZEROFILL";
-        public const string NumVotesColType = "INT";
     }
 }

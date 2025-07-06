@@ -53,6 +53,9 @@ void PrepareScripts()
 
     var titleBuilder = new TitleBuilder( @$"{outputDir}\titles", @$"{baseDataDir}\{TitleFileSchema.FileName}", "titles_data_insert" );
     titleBuilder.CreateRatingInsertFiles();
+
+    var personBuilder = new PersonBuilder( @$"{outputDir}\persons", @$"{baseDataDir}\{PersonFileSchema.FileName}", "persons_data_insert" );
+    personBuilder.CreateRatingInsertFiles();
 }
 
 async Task InsertAllScripts()
@@ -62,17 +65,24 @@ async Task InsertAllScripts()
 
     List<string> titleErrors = await InsertScriptsFromDir( @$"{outputDir}\titles", connection );
     List<string> ratingErrors = await InsertScriptsFromDir( @$"{outputDir}\ratings", connection );
+    List<string> personErrors = await InsertScriptsFromDir( @$"{outputDir}\persons", connection );
 
     var errorBuilder = new StringBuilder();
     errorBuilder.AppendLine( "Errors from inserts:" );
+
     errorBuilder.AppendLine( "Titles:" );
-    foreach(var titleError in titleErrors) {
+    foreach( var titleError in titleErrors ) {
         errorBuilder.AppendLine( titleError );
     }
 
     errorBuilder.AppendLine( "\nRatings:" );
     foreach( var ratingError in ratingErrors ) {
         errorBuilder.AppendLine( ratingError );
+    }
+
+    errorBuilder.AppendLine( "\nRatings:" );
+    foreach( var personError in personErrors ) {
+        errorBuilder.AppendLine( personError );
     }
 
     Console.WriteLine(errorBuilder.ToString() );
