@@ -33,4 +33,16 @@ CREATE TABLE Person (
     KnownForTitles VARCHAR(255)
 );
 
+CREATE TABLE Performance (
+    PerformanceId INT AUTO_INCREMENT PRIMARY KEY,
+    ImdbId VARCHAR(12) NOT NULL,
+    Ordering INT NOT NULL,
+    PersonImdbId VARCHAR(12) NOT NULL,
+    Category VARCHAR(64) NOT NULL,
+    Job VARCHAR(255) NULL,
+    Characters VARCHAR(255) NULL,
+    CONSTRAINT fk_Performance_MediaTitle_ImdbId FOREIGN KEY (ImdbId) REFERENCES MediaTitle(ImdbId),
+    CONSTRAINT fk_Performance_Person_PersonImdbId FOREIGN KEY (PersonImdbId) REFERENCES Person(PersonImdbId)
+);
+
 FLUSH PRIVILEGES;

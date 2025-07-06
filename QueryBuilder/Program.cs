@@ -48,14 +48,17 @@ while( !isExitInput ) {
 
 void PrepareScripts()
 {
-    var ratingBuilder = new RatingBuilder( @$"{outputDir}\ratings", @$"{baseDataDir}\{RatingFileSchema.FileName}", "rating_data_insert" );
-    ratingBuilder.CreateRatingInsertFiles();
+    //var ratingBuilder = new RatingBuilder( @$"{outputDir}\ratings", @$"{baseDataDir}\{RatingFileSchema.FileName}", "rating_data_insert" );
+    //ratingBuilder.CreateRatingInsertFiles();
 
-    var titleBuilder = new TitleBuilder( @$"{outputDir}\titles", @$"{baseDataDir}\{TitleFileSchema.FileName}", "titles_data_insert" );
-    titleBuilder.CreateRatingInsertFiles();
+    //var titleBuilder = new TitleBuilder( @$"{outputDir}\titles", @$"{baseDataDir}\{TitleFileSchema.FileName}", "titles_data_insert" );
+    //titleBuilder.CreateRatingInsertFiles();
 
-    var personBuilder = new PersonBuilder( @$"{outputDir}\persons", @$"{baseDataDir}\{PersonFileSchema.FileName}", "persons_data_insert" );
-    personBuilder.CreateRatingInsertFiles();
+    //var personBuilder = new PersonBuilder( @$"{outputDir}\persons", @$"{baseDataDir}\{PersonFileSchema.FileName}", "persons_data_insert" );
+    //personBuilder.CreateRatingInsertFiles();
+
+    var performanceBuilder = new PerformanceBuilder( @$"{outputDir}\performances", @$"{baseDataDir}\{PerformanceFileSchema.FileName}", "performances_data_insert" );
+    performanceBuilder.CreateRatingInsertFiles();
 }
 
 async Task InsertAllScripts()
@@ -63,26 +66,32 @@ async Task InsertAllScripts()
     await using var connection = new MySqlConnection( IMDB_ConnectionString );
     await connection.OpenAsync();
 
-    List<string> titleErrors = await InsertScriptsFromDir( @$"{outputDir}\titles", connection );
-    List<string> ratingErrors = await InsertScriptsFromDir( @$"{outputDir}\ratings", connection );
-    List<string> personErrors = await InsertScriptsFromDir( @$"{outputDir}\persons", connection );
+    //List<string> titleErrors = await InsertScriptsFromDir( @$"{outputDir}\titles", connection );
+    //List<string> ratingErrors = await InsertScriptsFromDir( @$"{outputDir}\ratings", connection );
+    //List<string> personErrors = await InsertScriptsFromDir( @$"{outputDir}\persons", connection );
+    List<string> performanceErrors = await InsertScriptsFromDir( @$"{outputDir}\performances", connection );
 
     var errorBuilder = new StringBuilder();
     errorBuilder.AppendLine( "Errors from inserts:" );
 
-    errorBuilder.AppendLine( "Titles:" );
-    foreach( var titleError in titleErrors ) {
-        errorBuilder.AppendLine( titleError );
-    }
+    //errorBuilder.AppendLine( "Titles:" );
+    //foreach( var error in titleErrors ) {
+    //    errorBuilder.AppendLine( error );
+    //}
 
-    errorBuilder.AppendLine( "\nRatings:" );
-    foreach( var ratingError in ratingErrors ) {
-        errorBuilder.AppendLine( ratingError );
-    }
+    //errorBuilder.AppendLine( "\nRatings:" );
+    //foreach( var error in ratingErrors ) {
+    //    errorBuilder.AppendLine( error );
+    //}
 
-    errorBuilder.AppendLine( "\nRatings:" );
-    foreach( var personError in personErrors ) {
-        errorBuilder.AppendLine( personError );
+    //errorBuilder.AppendLine( "\nPersons:" );
+    //foreach( var error in personErrors ) {
+    //    errorBuilder.AppendLine( error );
+    //}
+
+    errorBuilder.AppendLine( "\nPerformances:" );
+    foreach( var error in performanceErrors ) {
+        errorBuilder.AppendLine( error );
     }
 
     Console.WriteLine(errorBuilder.ToString() );
