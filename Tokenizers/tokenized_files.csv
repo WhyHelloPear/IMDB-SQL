@@ -2,3 +2,4 @@ file
 docker-compose.yml
 config.inc.php
 .\SQL\DB_Setup.sql
+.\QueryBuilder\secrets.json

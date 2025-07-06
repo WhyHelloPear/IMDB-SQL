@@ -1,4 +1,5 @@
 ﻿using IMDB_DB.DTO;
+using System.Text;
 
 namespace IMDB_DB.Builders
 {
@@ -52,22 +53,32 @@ namespace IMDB_DB.Builders
 
         private void WriteBatchFile( TitleDto[] values, int currentBatchCount )
         {
-            string insertHeader = @$"
-                INSERT INTO {TitleFileSchema.SqlTableName} 
-                (
-                    {TitleFileSchema.ImdbIdColName}, {TitleFileSchema.TitleTypeColName}, {TitleFileSchema.PrimaryTitleColName},
-                    {TitleFileSchema.OriginalTitleColName}, {TitleFileSchema.IsAdultColName}, {TitleFileSchema.StartYearColName},
-                    {TitleFileSchema.EndYearColName}, {TitleFileSchema.RuntimeMinutesColName}, {TitleFileSchema.GenresColName}
-                ) 
-                VALUES";
+            var headerBuilder = new StringBuilder();
+            headerBuilder.AppendLine( "USE IMDB;" );
+            headerBuilder.Append( $"INSERT INTO {TitleFileSchema.SqlTableName} (" );
+            headerBuilder.Append( $"{TitleFileSchema.ImdbIdColName}, {TitleFileSchema.TitleTypeColName}, {TitleFileSchema.PrimaryTitleColName}" );
+            headerBuilder.Append( $", {TitleFileSchema.OriginalTitleColName}, {TitleFileSchema.IsAdultColName}, {TitleFileSchema.StartYearColName}" );
+            headerBuilder.AppendLine( $", {TitleFileSchema.EndYearColName}, {TitleFileSchema.RuntimeMinutesColName}, {TitleFileSchema.GenresColName} )" );
+            headerBuilder.Append( $"VALUES" );
 
-            List<string> valueRows = values.Where( v => v != null ).Select( dto =>
-                $"('{dto.ImdbId}','{dto.MediaType}','{dto.PrimaryTitle.Replace( "'", "''" )}','{dto.OriginalTitle.Replace( "'", "''" )}','{(dto.IsAdult ? 1 : 0)}','{dto.StartYear}','{dto.EndYear.Replace( @"\N", "NULL" )}','{dto.RuntimeMinutes}','{dto.Genres}'),"
-            ).ToList();
+            List<string> valueRows = values.Where( v => v != null ).Select( dto => {
+                var rowBuilder = new StringBuilder();
+                rowBuilder.Append( "\t" );
+                rowBuilder.Append( $"( '{dto.ImdbId}'" );
+                rowBuilder.Append( $", '{dto.MediaType}'" );
+                rowBuilder.Append( $", '{dto.PrimaryTitle.Truncate( 255 ).Replace(@"\'","'").Replace( @"/'", "'" ).Replace( "'", "''" )}'" );
+                rowBuilder.Append( $", '{dto.OriginalTitle.Truncate( 255 ).Replace( @"\'", "'" ).Replace( @"/'", "'" ).Replace( "'", "''" )}'" );
+                rowBuilder.Append( $", '{( dto.IsAdult ? 1 : 0 )}'" );
+                rowBuilder.Append( $", '{dto.StartYear}'" );
+                rowBuilder.Append( $", '{dto.EndYear.Replace( @"\N", "NULL" )}'" );
+                rowBuilder.Append( $", '{dto.RuntimeMinutes}'" );
+                rowBuilder.Append( $", '{dto.Genres.Truncate( 255 )}' )," );
+                return rowBuilder.ToString();
+            } ).ToList();
 
             valueRows[valueRows.Count - 1] = valueRows.Last().TrimEnd( ',' );
 
-            StaticHandler.WriteBatchFile( _outputDir, _fileName, insertHeader, valueRows, currentBatchCount );
+            StaticHandler.WriteBatchFile( _outputDir, _fileName, headerBuilder.ToString(), valueRows, currentBatchCount );
         }
     }
 
@@ -88,7 +99,7 @@ namespace IMDB_DB.Builders
 
         public const string FileName = "title.basics.tsv";
 
-        public const string SqlTableName = "dbo.MediaTitle";
+        public const string SqlTableName = "MediaTitle";
 
         public const string ImdbIdColName = "ImdbId";
         public const string TitleTypeColName = "TitleType";

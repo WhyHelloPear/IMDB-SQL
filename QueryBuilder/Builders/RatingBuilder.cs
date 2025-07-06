@@ -1,4 +1,5 @@
 ﻿using IMDB_DB.DTO;
+using System.Text;
 
 namespace IMDB_DB.Builders
 {
@@ -52,12 +53,23 @@ namespace IMDB_DB.Builders
 
         private void WriteBatchFile( RatingDto[] values, int currentBatchCount )
         {
-            string insertHeader = $"INSERT INTO {RatingFileSchema.SqlTableName} ({RatingFileSchema.ImdbIdColName}, {RatingFileSchema.RatingColName}, {RatingFileSchema.NumVotesColName}) VALUES";
-            List<string> valueRows = values.Where( v => v != null ).Select( dto => $"('{dto.ImdbId}','{dto.Rating}','{dto.NumVotes}')," ).ToList();
+            var headerBuilder = new StringBuilder();
+            headerBuilder.AppendLine( "USE IMDB;" );
+            headerBuilder.AppendLine( $"INSERT INTO {RatingFileSchema.SqlTableName} ( {RatingFileSchema.ImdbIdColName}, {RatingFileSchema.RatingColName}, {RatingFileSchema.NumVotesColName} )" );
+            headerBuilder.Append( $"VALUES" );
+
+            List<string> valueRows = values.Where( v => v != null ).Select( dto => {
+                var rowBuilder = new StringBuilder();
+                rowBuilder.Append( "\t" );
+                rowBuilder.Append( $"( '{dto.ImdbId}'" );
+                rowBuilder.Append( $", '{dto.Rating}'" );
+                rowBuilder.Append( $", '{dto.NumVotes}' )," );
+                return rowBuilder.ToString();
+            } ).ToList();
 
             valueRows[valueRows.Count - 1] = valueRows.Last().TrimEnd( ',' );
 
-            StaticHandler.WriteBatchFile( _outputDir, _fileName, insertHeader, valueRows, currentBatchCount );
+            StaticHandler.WriteBatchFile( _outputDir, _fileName, headerBuilder.ToString(), valueRows, currentBatchCount );
         }
     }
 
@@ -69,14 +81,10 @@ namespace IMDB_DB.Builders
 
         public const string FileName = "title.ratings.tsv";
 
-        public const string SqlTableName = "dbo.Ratings";
+        public const string SqlTableName = "TitleRating";
 
         public const string ImdbIdColName = "ImdbId";
         public const string RatingColName = "Rating";
         public const string NumVotesColName = "NumVotes";
-
-        public const string ImdbIdColType = "VARCHAR(16)";
-        public const string RatingColType = "DECIMAL UNSIGNED ZEROFILL";
-        public const string NumVotesColType = "INT";
     }
 }
