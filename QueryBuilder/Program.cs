@@ -47,20 +47,23 @@ while( !isExitInput ) {
 
 void PrepareScripts()
 {
-    //var ratingBuilder = new RatingBuilder( @$"{outputDir}\ratings", @$"{baseDataDir}\{RatingFileSchema.FileName}", "rating_data_insert" );
+    //var ratingBuilder = new RatingBuilder( @$"{outputDir}\ratings", baseDataDir, "rating_data_insert" );
     //ratingBuilder.CreateRatingInsertFiles();
 
-    //var titleBuilder = new TitleBuilder( @$"{outputDir}\titles", @$"{baseDataDir}\{TitleFileSchema.FileName}", "titles_data_insert" );
+    //var titleBuilder = new TitleBuilder( @$"{outputDir}\titles", baseDataDir, "titles_data_insert" );
     //titleBuilder.CreateRatingInsertFiles();
 
-    //var personBuilder = new PersonBuilder( @$"{outputDir}\persons", @$"{baseDataDir}\{PersonFileSchema.FileName}", "persons_data_insert" );
+    //var personBuilder = new PersonBuilder( @$"{outputDir}\persons", baseDataDir, "persons_data_insert" );
     //personBuilder.CreateRatingInsertFiles();
 
-    //var performanceBuilder = new PerformanceBuilder( @$"{outputDir}\performances", @$"{baseDataDir}\{PerformanceFileSchema.FileName}", "performances_data_insert" );
+    //var performanceBuilder = new PerformanceBuilder( @$"{outputDir}\performances", baseDataDir, "performances_data_insert" );
     //performanceBuilder.CreateRatingInsertFiles();
-    
-    var personPositionBuilder = new PersonPositionBuilder( @$"{outputDir}\personPosition", @$"{baseDataDir}\{PersonPositionFileSchema.FileName}", "personPosition_data_insert" );
-    personPositionBuilder.CreateRatingInsertFiles();
+
+    //var personPositionBuilder = new PersonPositionBuilder( @$"{outputDir}\personPosition", baseDataDir, "personPosition_data_insert" );
+    //personPositionBuilder.CreateRatingInsertFiles();
+
+    var titleAliasBuilder = new TitleAliasBuilder( @$"{outputDir}\titleAlias", baseDataDir, "personPosition_data_insert" );
+    titleAliasBuilder.CreateRatingInsertFiles();
 }
 
 async Task InsertAllScripts()

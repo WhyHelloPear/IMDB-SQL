@@ -2,20 +2,20 @@
 
 namespace IMDB_DB.Builders
 {
-    internal class PerformanceBuilder
+    internal class PerformanceBuilder : BaseBuilder
     {
-        private string _fileName;
-        private string _outputDir;
-        private string _inputDataFile;
+        public PerformanceBuilder( string outputDir, string inputDataFile, string fileName ) : base (outputDir, inputDataFile, fileName) {
+            var headerBuilder = new StringBuilder();
+            headerBuilder.AppendLine( "USE IMDB;" );
+            headerBuilder.Append( $"INSERT INTO {FileSchema.SqlTableName} (" );
+            headerBuilder.Append( $"{FileSchema.ImdbIdColName}, {FileSchema.OrderingColName}, {FileSchema.PersonIdColName}" );
+            headerBuilder.AppendLine( $", {FileSchema.CategoryColName}, {FileSchema.JobColName}, {FileSchema.CharactersColName} )" );
+            headerBuilder.Append( $"VALUES" );
 
-        public PerformanceBuilder( string outputDir, string inputDataFile, string fileName )
-        {
-            _outputDir = outputDir;
-            _inputDataFile = inputDataFile;
-            _fileName = fileName;
+            _insertHeader = headerBuilder.ToString();
         }
 
-        public void CreateRatingInsertFiles()
+        public override void CreateRatingInsertFiles()
         {
             using var reader = new StreamReader( _inputDataFile );
 
@@ -52,13 +52,6 @@ namespace IMDB_DB.Builders
 
         private void WriteBatchFile( Dto[] values, int currentBatchCount )
         {
-            var headerBuilder = new StringBuilder();
-            headerBuilder.AppendLine( "USE IMDB;" );
-            headerBuilder.Append( $"INSERT INTO {FileSchema.SqlTableName} (" );
-            headerBuilder.Append( $"{FileSchema.ImdbIdColName}, {FileSchema.OrderingColName}, {FileSchema.PersonIdColName}" );
-            headerBuilder.AppendLine( $", {FileSchema.CategoryColName}, {FileSchema.JobColName}, {FileSchema.CharactersColName} )" );
-            headerBuilder.Append( $"VALUES" );
-
             List<string> valueRows = values.Where( v => v != null ).Select( dto => {
                 var rowBuilder = new StringBuilder();
                 rowBuilder.Append( "\t" );
@@ -73,7 +66,7 @@ namespace IMDB_DB.Builders
 
             valueRows[valueRows.Count - 1] = valueRows.Last().TrimEnd( ',' );
 
-            StaticHandler.WriteBatchFile( _outputDir, _fileName, headerBuilder.ToString(), valueRows, currentBatchCount );
+            StaticHandler.WriteBatchFile( _outputDir, _fileName, _insertHeader, valueRows, currentBatchCount );
         }
         
         private static class FileSchema
