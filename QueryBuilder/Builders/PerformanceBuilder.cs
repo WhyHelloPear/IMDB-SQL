@@ -20,7 +20,7 @@ namespace IMDB_DB.Builders
             using var reader = new StreamReader( _inputDataFile );
 
             int batchSize = 1000; // Number of rows per INSERT statement
-            var valueBatch = new PerformanceDto[batchSize];
+            var valueBatch = new Dto[batchSize];
             string? line;
 
             int readerLine = 0;
@@ -32,14 +32,14 @@ namespace IMDB_DB.Builders
                     continue;
                 }
 
-                valueBatch[sqlLineCount] = new PerformanceDto( line );
+                valueBatch[sqlLineCount] = new Dto( line );
                 sqlLineCount++;
 
                 if( sqlLineCount >= batchSize ) {
                     WriteBatchFile( valueBatch, currentBatchCount );
                     currentBatchCount++;
                     sqlLineCount = 0;
-                    valueBatch = new PerformanceDto[batchSize];
+                    valueBatch = new Dto[batchSize];
                 }
 
                 readerLine++;
@@ -50,13 +50,13 @@ namespace IMDB_DB.Builders
             }
         }
 
-        private void WriteBatchFile( PerformanceDto[] values, int currentBatchCount )
+        private void WriteBatchFile( Dto[] values, int currentBatchCount )
         {
             var headerBuilder = new StringBuilder();
             headerBuilder.AppendLine( "USE IMDB;" );
-            headerBuilder.Append( $"INSERT INTO {PerformanceFileSchema.SqlTableName} (" );
-            headerBuilder.Append( $"{PerformanceFileSchema.ImdbIdColName}, {PerformanceFileSchema.OrderingColName}, {PerformanceFileSchema.PersonIdColName}" );
-            headerBuilder.AppendLine( $", {PerformanceFileSchema.CategoryColName}, {PerformanceFileSchema.JobColName}, {PerformanceFileSchema.CharactersColName} )" );
+            headerBuilder.Append( $"INSERT INTO {FileSchema.SqlTableName} (" );
+            headerBuilder.Append( $"{FileSchema.ImdbIdColName}, {FileSchema.OrderingColName}, {FileSchema.PersonIdColName}" );
+            headerBuilder.AppendLine( $", {FileSchema.CategoryColName}, {FileSchema.JobColName}, {FileSchema.CharactersColName} )" );
             headerBuilder.Append( $"VALUES" );
 
             List<string> valueRows = values.Where( v => v != null ).Select( dto => {
@@ -75,54 +75,54 @@ namespace IMDB_DB.Builders
 
             StaticHandler.WriteBatchFile( _outputDir, _fileName, headerBuilder.ToString(), valueRows, currentBatchCount );
         }
-    }
-
-    public static class PerformanceFileSchema
-    {
-        public enum Indices
+        
+        private static class FileSchema
         {
-            ImdbId = 0,
-            Ordering,
-            PersonId,
-            Category,
-            Job,
-            Characters
-        }
-
-        public const string FileName = "title.principals.tsv";
-        public const string SqlTableName = "Performance";
-
-        public const string ImdbIdColName = "ImdbId";
-        public const string OrderingColName = "Ordering";
-        public const string PersonIdColName = "PersonImdbId";
-        public const string CategoryColName = "Category";
-        public const string JobColName = "Job";
-        public const string CharactersColName = "Characters";
-    }
-
-    public class PerformanceDto
-    {
-
-        public PerformanceDto( string dataLine )
-        {
-            string[] t = dataLine.Split( Constants.DELIMITER );
-
-            ImdbId = t[(int)PerformanceFileSchema.Indices.ImdbId];
-            PersonId = t[(int)PerformanceFileSchema.Indices.PersonId];
-            Category = t[(int)PerformanceFileSchema.Indices.Category];
-            Job = t[(int)PerformanceFileSchema.Indices.Job];
-            Characters = t[(int)PerformanceFileSchema.Indices.Characters];
-
-            if( int.TryParse( t[(int)PerformanceFileSchema.Indices.Ordering], out int order ) ) {
-                Ordering = order;
+            public enum Indices
+            {
+                ImdbId = 0,
+                Ordering,
+                PersonId,
+                Category,
+                Job,
+                Characters
             }
+
+            public const string FileName = "title.principals.tsv";
+            public const string SqlTableName = "Performance";
+
+            public const string ImdbIdColName = "ImdbId";
+            public const string OrderingColName = "Ordering";
+            public const string PersonIdColName = "PersonImdbId";
+            public const string CategoryColName = "Category";
+            public const string JobColName = "Job";
+            public const string CharactersColName = "Characters";
         }
 
-        public string ImdbId { get; set; }
-        public int Ordering { get; set; }
-        public string PersonId { get; set; }
-        public string Category { get; set; }
-        public string Job { get; set; }
-        public string Characters { get; set; }
+        private class Dto
+        {
+
+            public Dto( string dataLine )
+            {
+                string[] t = dataLine.Split( Constants.DELIMITER );
+
+                ImdbId = t[(int)FileSchema.Indices.ImdbId];
+                PersonId = t[(int)FileSchema.Indices.PersonId];
+                Category = t[(int)FileSchema.Indices.Category];
+                Job = t[(int)FileSchema.Indices.Job];
+                Characters = t[(int)FileSchema.Indices.Characters];
+
+                if( int.TryParse( t[(int)FileSchema.Indices.Ordering], out int order ) ) {
+                    Ordering = order;
+                }
+            }
+
+            public string ImdbId { get; set; }
+            public int Ordering { get; set; }
+            public string PersonId { get; set; }
+            public string Category { get; set; }
+            public string Job { get; set; }
+            public string Characters { get; set; }
+        }
     }
 }

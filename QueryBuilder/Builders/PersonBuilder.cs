@@ -20,7 +20,7 @@ namespace IMDB_DB.Builders
             using var reader = new StreamReader( _inputDataFile );
 
             int batchSize = 1000; // Number of rows per INSERT statement
-            var valueBatch = new PersonDto[batchSize];
+            var valueBatch = new Dto[batchSize];
             string? line;
 
             int readerLine = 0;
@@ -32,14 +32,14 @@ namespace IMDB_DB.Builders
                     continue;
                 }
 
-                valueBatch[sqlLineCount] = new PersonDto( line );
+                valueBatch[sqlLineCount] = new Dto( line );
                 sqlLineCount++;
 
                 if( sqlLineCount >= batchSize ) {
                     WriteBatchFile( valueBatch, currentBatchCount );
                     currentBatchCount++;
                     sqlLineCount = 0;
-                    valueBatch = new PersonDto[batchSize];
+                    valueBatch = new Dto[batchSize];
                 }
 
                 readerLine++;
@@ -50,13 +50,13 @@ namespace IMDB_DB.Builders
             }
         }
 
-        private void WriteBatchFile( PersonDto[] values, int currentBatchCount )
+        private void WriteBatchFile( Dto[] values, int currentBatchCount )
         {
             var headerBuilder = new StringBuilder();
             headerBuilder.AppendLine( "USE IMDB;" );
-            headerBuilder.Append( $"INSERT INTO {PersonFileSchema.SqlTableName} (" );
-            headerBuilder.Append( $"{PersonFileSchema.PersonIdColName}, {PersonFileSchema.PrimaryNameColName}, {PersonFileSchema.BirthYearColName}" );
-            headerBuilder.AppendLine( $", {PersonFileSchema.DeathYearColName}, {PersonFileSchema.PrimaryProfessionColName}, {PersonFileSchema.KnownForTitlesColName} )" );
+            headerBuilder.Append( $"INSERT INTO {FileSchema.SqlTableName} (" );
+            headerBuilder.Append( $"{FileSchema.PersonIdColName}, {FileSchema.PrimaryNameColName}, {FileSchema.BirthYearColName}" );
+            headerBuilder.AppendLine( $", {FileSchema.DeathYearColName}, {FileSchema.PrimaryProfessionColName}, {FileSchema.KnownForTitlesColName} )" );
             headerBuilder.Append( $"VALUES" );
 
             List<string> valueRows = values.Where( v => v != null ).Select( dto => {
@@ -75,52 +75,52 @@ namespace IMDB_DB.Builders
 
             StaticHandler.WriteBatchFile( _outputDir, _fileName, headerBuilder.ToString(), valueRows, currentBatchCount );
         }
-    }
 
-    public static class PersonFileSchema
-    {
-        public enum Indices
+        private static class FileSchema
         {
-            PersonId = 0,
-            PrimaryName,
-            BirthYear,
-            DeathYear,
-            PrimaryProfession,
-            KnownForTitles
+            public enum Indices
+            {
+                PersonId = 0,
+                PrimaryName,
+                BirthYear,
+                DeathYear,
+                PrimaryProfession,
+                KnownForTitles
+            }
+
+            public const string FileName = "name.basics.tsv";
+
+            public const string SqlTableName = "Person";
+
+            public const string PersonIdColName = "PersonImdbId";
+            public const string PrimaryNameColName = "PrimaryName";
+            public const string BirthYearColName = "BirthYear";
+            public const string DeathYearColName = "DeathYear";
+            public const string PrimaryProfessionColName = "PrimaryProfession";
+            public const string KnownForTitlesColName = "KnownForTitles";
         }
 
-        public const string FileName = "name.basics.tsv";
-
-        public const string SqlTableName = "Person";
-
-        public const string PersonIdColName = "PersonImdbId";
-        public const string PrimaryNameColName = "PrimaryName";
-        public const string BirthYearColName = "BirthYear";
-        public const string DeathYearColName = "DeathYear";
-        public const string PrimaryProfessionColName = "PrimaryProfession";
-        public const string KnownForTitlesColName = "KnownForTitles";
-    }
-
-    public class PersonDto
-    {
-
-        public PersonDto( string dataLine )
+        private class Dto
         {
-            string[] t = dataLine.Split( Constants.DELIMITER );
 
-            PersonId = t[(int)PersonFileSchema.Indices.PersonId];
-            PrimaryName = t[(int)PersonFileSchema.Indices.PrimaryName];
-            BirthYear = t[(int)PersonFileSchema.Indices.BirthYear];
-            DeathYear = t[(int)PersonFileSchema.Indices.DeathYear];
-            PrimaryProfession = t[(int)PersonFileSchema.Indices.PrimaryProfession];
-            KnownForTitles = t[(int)PersonFileSchema.Indices.KnownForTitles];
+            public Dto( string dataLine )
+            {
+                string[] t = dataLine.Split( Constants.DELIMITER );
+
+                PersonId = t[(int)FileSchema.Indices.PersonId];
+                PrimaryName = t[(int)FileSchema.Indices.PrimaryName];
+                BirthYear = t[(int)FileSchema.Indices.BirthYear];
+                DeathYear = t[(int)FileSchema.Indices.DeathYear];
+                PrimaryProfession = t[(int)FileSchema.Indices.PrimaryProfession];
+                KnownForTitles = t[(int)FileSchema.Indices.KnownForTitles];
+            }
+
+            public string PersonId { get; set; }
+            public string PrimaryName { get; set; }
+            public string BirthYear { get; set; }
+            public string DeathYear { get; set; }
+            public string PrimaryProfession { get; set; }
+            public string KnownForTitles { get; set; }
         }
-
-        public string PersonId { get; set; }
-        public string PrimaryName { get; set; }
-        public string BirthYear { get; set; }
-        public string DeathYear { get; set; }
-        public string PrimaryProfession { get; set; }
-        public string KnownForTitles { get; set; }
     }
 }

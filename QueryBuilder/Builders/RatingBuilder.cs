@@ -20,7 +20,7 @@ namespace IMDB_DB.Builders
             using var reader = new StreamReader( _inputDataFile );
 
             int batchSize = 1000; // Number of rows per INSERT statement
-            var valueBatch = new RatingDto[batchSize];
+            var valueBatch = new Dto[batchSize];
             string? line;
 
             int readerLine = 0;
@@ -32,14 +32,14 @@ namespace IMDB_DB.Builders
                     continue;
                 }
 
-                valueBatch[sqlLineCount] = new RatingDto( line );
+                valueBatch[sqlLineCount] = new Dto( line );
                 sqlLineCount++;
 
                 if( sqlLineCount >= batchSize ) {
                     WriteBatchFile( valueBatch, currentBatchCount );
                     currentBatchCount++;
                     sqlLineCount = 0;
-                    valueBatch = new RatingDto[batchSize];
+                    valueBatch = new Dto[batchSize];
                 }
 
                 readerLine++;
@@ -50,11 +50,11 @@ namespace IMDB_DB.Builders
             }
         }
 
-        private void WriteBatchFile( RatingDto[] values, int currentBatchCount )
+        private void WriteBatchFile( Dto[] values, int currentBatchCount )
         {
             var headerBuilder = new StringBuilder();
             headerBuilder.AppendLine( "USE IMDB;" );
-            headerBuilder.AppendLine( $"INSERT INTO {RatingFileSchema.SqlTableName} ( {RatingFileSchema.ImdbIdColName}, {RatingFileSchema.RatingColName}, {RatingFileSchema.NumVotesColName} )" );
+            headerBuilder.AppendLine( $"INSERT INTO {FileSchema.SqlTableName} ( {FileSchema.ImdbIdColName}, {FileSchema.RatingColName}, {FileSchema.NumVotesColName} )" );
             headerBuilder.Append( $"VALUES" );
 
             List<string> valueRows = values.Where( v => v != null ).Select( dto => {
@@ -70,44 +70,45 @@ namespace IMDB_DB.Builders
 
             StaticHandler.WriteBatchFile( _outputDir, _fileName, headerBuilder.ToString(), valueRows, currentBatchCount );
         }
-    }
 
-    public static class RatingFileSchema
-    {
-        public enum Indices
+        private static class FileSchema
         {
-            ImdbId = 0,
-            Rating,
-            NumVotes,
-        }
-
-        public const string FileName = "title.ratings.tsv";
-
-        public const string SqlTableName = "TitleRating";
-
-        public const string ImdbIdColName = "ImdbId";
-        public const string RatingColName = "Rating";
-        public const string NumVotesColName = "NumVotes";
-    }
-
-    public class RatingDto
-    {
-        public RatingDto( string dataLine )
-        {
-            string[] t = dataLine.Split( Constants.DELIMITER );
-
-            ImdbId = t[(int)RatingFileSchema.Indices.ImdbId];
-            if( decimal.TryParse( t[(int)RatingFileSchema.Indices.Rating], out decimal rating ) ) {
-                Rating = rating;
+            public enum Indices
+            {
+                ImdbId = 0,
+                Rating,
+                NumVotes,
             }
 
-            if( int.TryParse( t[(int)RatingFileSchema.Indices.NumVotes], out int numVotes ) ) {
-                NumVotes = numVotes;
-            }
+            public const string FileName = "title.ratings.tsv";
+
+            public const string SqlTableName = "TitleRating";
+
+            public const string ImdbIdColName = "ImdbId";
+            public const string RatingColName = "Rating";
+            public const string NumVotesColName = "NumVotes";
         }
 
-        public string ImdbId { get; set; }
-        public decimal Rating { get; set; } = 0;
-        public int NumVotes { get; set; } = 0;
+        private class Dto
+        {
+            public Dto( string dataLine )
+            {
+                string[] t = dataLine.Split( Constants.DELIMITER );
+
+                ImdbId = t[(int)FileSchema.Indices.ImdbId];
+                if( decimal.TryParse( t[(int)FileSchema.Indices.Rating], out decimal rating ) ) {
+                    Rating = rating;
+                }
+
+                if( int.TryParse( t[(int)FileSchema.Indices.NumVotes], out int numVotes ) ) {
+                    NumVotes = numVotes;
+                }
+            }
+
+            public string ImdbId { get; set; }
+            public decimal Rating { get; set; } = 0;
+            public int NumVotes { get; set; } = 0;
+        }
     }
+
 }

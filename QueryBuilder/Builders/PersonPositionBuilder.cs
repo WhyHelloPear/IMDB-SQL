@@ -20,7 +20,7 @@ namespace IMDB_DB.Builders
             using var reader = new StreamReader( _inputDataFile );
 
             int batchSize = 1000; // Number of rows per INSERT statement
-            var valueBatch = new TitlePersonPositionDto[batchSize];
+            var valueBatch = new Dto[batchSize];
             string? line;
 
             int readerLine = 0;
@@ -34,16 +34,16 @@ namespace IMDB_DB.Builders
 
                 string[] t = line.Split( Constants.DELIMITER );
 
-                string imdbId = t[(int)PersonPositionFileSchema.Indices.ImdbId];
-                string directors = t[(int)PersonPositionFileSchema.Indices.Directors].Replace( @"\N", "" );
-                string writers = t[(int)PersonPositionFileSchema.Indices.Writers].Replace( @"\N", "" );
+                string imdbId = t[(int)FileSchema.Indices.ImdbId];
+                string directors = t[(int)FileSchema.Indices.Directors].Replace( @"\N", "" );
+                string writers = t[(int)FileSchema.Indices.Writers].Replace( @"\N", "" );
                 if( string.IsNullOrEmpty( directors ) && string.IsNullOrEmpty( writers ) ) {
                     continue;
                 }
 
-                List<TitlePersonPositionDto> titleWritersAndDirectors = [
-                    .. writers.Split(',').Where(w => !string.IsNullOrWhiteSpace(w)).Select(w => new TitlePersonPositionDto(imdbId, w, (int)Constants.TitlePositions.Writer)),
-                    .. directors.Split(',').Where(d => !string.IsNullOrWhiteSpace(d)).Select(d => new TitlePersonPositionDto(imdbId, d, (int)Constants.TitlePositions.Director))
+                List<Dto> titleWritersAndDirectors = [
+                    .. writers.Split(',').Where(w => !string.IsNullOrWhiteSpace(w)).Select(w => new Dto(imdbId, w, (int)Constants.TitlePositions.Writer)),
+                    .. directors.Split(',').Where(d => !string.IsNullOrWhiteSpace(d)).Select(d => new Dto(imdbId, d, (int)Constants.TitlePositions.Director))
                 ];
 
                 foreach( var dto in titleWritersAndDirectors ) {
@@ -54,7 +54,7 @@ namespace IMDB_DB.Builders
                         WriteBatchFile( valueBatch, currentBatchCount );
                         currentBatchCount++;
                         sqlLineCount = 0;
-                        valueBatch = new TitlePersonPositionDto[batchSize];
+                        valueBatch = new Dto[batchSize];
                     }
                 }
                 readerLine++;
@@ -65,11 +65,11 @@ namespace IMDB_DB.Builders
             }
         }
 
-        private void WriteBatchFile( TitlePersonPositionDto[] values, int currentBatchCount )
+        private void WriteBatchFile( Dto[] values, int currentBatchCount )
         {
             var headerBuilder = new StringBuilder();
             headerBuilder.AppendLine( "USE IMDB;" );
-            headerBuilder.AppendLine( $"INSERT INTO {PersonPositionFileSchema.SqlTableName} ( {PersonPositionFileSchema.ImdbIdColName}, {PersonPositionFileSchema.PersonColName}, {PersonPositionFileSchema.PositionColName} )" );
+            headerBuilder.AppendLine( $"INSERT INTO {FileSchema.SqlTableName} ( {FileSchema.ImdbIdColName}, {FileSchema.PersonColName}, {FileSchema.PositionColName} )" );
             headerBuilder.Append( $"VALUES" );
 
             List<string> valueRows = values.Where( v => v != null ).Select( dto => {
@@ -85,37 +85,38 @@ namespace IMDB_DB.Builders
 
             StaticHandler.WriteBatchFile( _outputDir, _fileName, headerBuilder.ToString(), valueRows, currentBatchCount );
         }
-    }
 
-    public static class PersonPositionFileSchema
-    {
-        public enum Indices
+        private static class FileSchema
         {
-            ImdbId = 0,
-            Directors,
-            Writers
+            public enum Indices
+            {
+                ImdbId = 0,
+                Directors,
+                Writers
+            }
+
+            public const string FileName = "title.crew.tsv";
+
+            public const string SqlTableName = "TitlePersonPosition";
+
+            public const string ImdbIdColName = "ImdbId";
+            public const string PersonColName = "PersonImdbId";
+            public const string PositionColName = "PositionId";
         }
 
-        public const string FileName = "title.crew.tsv";
-
-        public const string SqlTableName = "TitlePersonPosition";
-
-        public const string ImdbIdColName = "ImdbId";
-        public const string PersonColName = "PersonImdbId";
-        public const string PositionColName = "PositionId";
-    }
-
-    public class TitlePersonPositionDto
-    {
-        public TitlePersonPositionDto( string imdbId, string personImdbId, int positionId )
+        private class Dto
         {
-            ImdbId = imdbId;
-            PersonImdbId = personImdbId;
-            PositionId = positionId;
-        }
+            public Dto( string imdbId, string personImdbId, int positionId )
+            {
+                ImdbId = imdbId;
+                PersonImdbId = personImdbId;
+                PositionId = positionId;
+            }
 
-        public string ImdbId { get; set; }
-        public string PersonImdbId { get; set; }
-        public int PositionId { get; set; }
+            public string ImdbId { get; set; }
+            public string PersonImdbId { get; set; }
+            public int PositionId { get; set; }
+        }
     }
+
 }
