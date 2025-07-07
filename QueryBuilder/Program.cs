@@ -1,13 +1,9 @@
-﻿using IMDB_DB.Builders;
+﻿using IMDB_DB;
 using Microsoft.Extensions.Configuration;
 using MySqlConnector;
 using System.Text;
 
-//string baseDataDir = @"D:\IMDB_SQL\data";
-//string outputDir = @"D:\IMDB_SQL\sql_output";
 
-string baseDataDir = @"E:\MovieLibrary\imdb_sql\data";
-string outputDir = @"E:\MovieLibrary\imdb_sql\sql_output";
 
 var config = new ConfigurationBuilder()
     .SetBasePath( Directory.GetCurrentDirectory() )
@@ -21,7 +17,7 @@ while( !isExitInput ) {
     var userMenuBuilder = new StringBuilder();
     userMenuBuilder.AppendLine( "Choose an option:" );
     userMenuBuilder.AppendLine( "1. Create INSERT SQL scripts" );
-    userMenuBuilder.AppendLine( "2. Insert SQL scripts in order" );
+    userMenuBuilder.AppendLine( "2. Insert SQL scripts" );
     userMenuBuilder.AppendLine( "0. Exit" );
     userMenuBuilder.AppendLine( "=============================" );
     Console.WriteLine( userMenuBuilder.ToString() );
@@ -33,7 +29,7 @@ while( !isExitInput ) {
             Console.WriteLine( "Exiting...Goodbye!" );
             break;
         case "1":
-            PrepareScripts();
+            HandlePrepareScriptsChoise();
             break;
         case "2":
             await InsertAllScripts();
@@ -44,27 +40,67 @@ while( !isExitInput ) {
     }
 }
 
-
-void PrepareScripts()
+void HandlePrepareScriptsChoise()
 {
-    //var ratingBuilder = new RatingBuilder( @$"{outputDir}\ratings", baseDataDir, "rating_data_insert" );
-    //ratingBuilder.CreateRatingInsertFiles();
+    //string baseDataDir = @"D:\IMDB_SQL\data";
+    //string outputDir = @"D:\IMDB_SQL\sql_output";
 
-    //var titleBuilder = new TitleBuilder( @$"{outputDir}\titles", baseDataDir, "titles_data_insert" );
-    //titleBuilder.CreateRatingInsertFiles();
+    string baseDataDir = @"E:\MovieLibrary\imdb_sql\data";
+    string outputDir = @"E:\MovieLibrary\imdb_sql\sql_output";
 
-    //var personBuilder = new PersonBuilder( @$"{outputDir}\persons", baseDataDir, "persons_data_insert" );
-    //personBuilder.CreateRatingInsertFiles();
+    var factory = new BuilderFactory( baseDataDir, outputDir );
 
-    //var performanceBuilder = new PerformanceBuilder( @$"{outputDir}\performances", baseDataDir, "performances_data_insert" );
-    //performanceBuilder.CreateRatingInsertFiles();
+    bool isExitInput = false;
+    while( !isExitInput ) {
+        var userMenuBuilder = new StringBuilder();
+        userMenuBuilder.AppendLine( "Choose an option:" );
+        userMenuBuilder.AppendLine( "1. All" );
+        userMenuBuilder.AppendLine( "2. Titles" );
+        userMenuBuilder.AppendLine( "3. Persons" );
+        userMenuBuilder.AppendLine( "4. Performance" );
+        userMenuBuilder.AppendLine( "5. PersonPosition (director/writer)" );
+        userMenuBuilder.AppendLine( "6. Title Alias" );
+        userMenuBuilder.AppendLine( "7. Title Ratings" );
+        userMenuBuilder.AppendLine( "0. Exit" );
+        userMenuBuilder.AppendLine( "=============================" );
+        Console.WriteLine( userMenuBuilder.ToString() );
 
-    //var personPositionBuilder = new PersonPositionBuilder( @$"{outputDir}\personPosition", baseDataDir, "personPosition_data_insert" );
-    //personPositionBuilder.CreateRatingInsertFiles();
-
-    var titleAliasBuilder = new TitleAliasBuilder( @$"{outputDir}\titleAlias", baseDataDir, "personPosition_data_insert" );
-    titleAliasBuilder.CreateRatingInsertFiles();
+        var input = Console.ReadLine();
+        switch( input ) {
+            case "0":
+                isExitInput = true;
+                Console.WriteLine( "Exiting...Goodbye!" );
+                break;
+            case "1":
+                factory.BuildAll();
+                break;
+            case "2": //titles
+                factory.BuildTitlesSql();
+                break;
+            case "3": //persons
+                factory.BuildPersonsSql();
+                break;
+            case "4": //performances
+                factory.BuildPerformancesSql();
+                break;
+            case "5": //person positions
+                factory.BuildPersonPositionSql();
+                break;
+            case "6": //aliases
+                factory.BuildAliasSql();
+                break;
+            case "7": //ratings
+                factory.BuildRatingsSql();
+                break;
+            default:
+                Console.WriteLine( "Invalid option.\n\n" );
+                break;
+        }
+    }
 }
+
+
+
 
 async Task InsertAllScripts()
 {
