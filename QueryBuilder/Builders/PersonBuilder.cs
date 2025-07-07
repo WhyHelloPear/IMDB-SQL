@@ -33,7 +33,7 @@ namespace IMDB_DB.Builders
                     continue;
                 }
 
-                valueBatch[sqlLineCount] = new PersonDto( line, '\t' );
+                valueBatch[sqlLineCount] = new PersonDto( line );
                 sqlLineCount++;
 
                 if( sqlLineCount >= batchSize ) {

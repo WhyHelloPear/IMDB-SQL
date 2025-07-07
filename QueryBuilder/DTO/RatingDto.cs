@@ -4,16 +4,16 @@ namespace IMDB_DB.DTO
 {
     public class RatingDto
     {
-        public RatingDto( string dataLine, char delimiter )
+        public RatingDto( string dataLine )
         {
-            string[] t = dataLine.Split( delimiter );
+            string[] t = dataLine.Split( Constants.DELIMITER );
 
-            ImdbId = t[RatingFileSchema.ImdbIdIndex];
-            if( decimal.TryParse( t[RatingFileSchema.RatingIndex], out decimal rating ) ) {
+            ImdbId = t[(int)RatingFileSchema.Indices.ImdbId];
+            if( decimal.TryParse( t[(int)RatingFileSchema.Indices.Rating], out decimal rating ) ) {
                 Rating = rating;
             }
 
-            if( int.TryParse( t[RatingFileSchema.NumVotesIndex], out int numVotes ) ) {
+            if( int.TryParse( t[(int)RatingFileSchema.Indices.NumVotes], out int numVotes ) ) {
                 NumVotes = numVotes;
             }
         }

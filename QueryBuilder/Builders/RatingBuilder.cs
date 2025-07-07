@@ -33,7 +33,7 @@ namespace IMDB_DB.Builders
                     continue;
                 }
 
-                valueBatch[sqlLineCount] = new RatingDto( line, '\t' );
+                valueBatch[sqlLineCount] = new RatingDto( line );
                 sqlLineCount++;
 
                 if( sqlLineCount >= batchSize ) {
@@ -75,9 +75,12 @@ namespace IMDB_DB.Builders
 
     public static class RatingFileSchema
     {
-        public const int ImdbIdIndex = 0;
-        public const int RatingIndex = 1;
-        public const int NumVotesIndex = 2;
+        public enum Indices
+        {
+            ImdbId = 0,
+            Rating,
+            NumVotes,
+        }
 
         public const string FileName = "title.ratings.tsv";
 

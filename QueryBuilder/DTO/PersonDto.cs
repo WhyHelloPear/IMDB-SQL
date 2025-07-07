@@ -5,9 +5,9 @@ namespace IMDB_DB.DTO
     public class PersonDto
     {
 
-        public PersonDto( string dataLine, char delimiter )
+        public PersonDto( string dataLine )
         {
-            string[] t = dataLine.Split( delimiter );
+            string[] t = dataLine.Split( Constants.DELIMITER );
 
             PersonId = t[(int)PersonFileSchema.Indices.PersonId];
             PrimaryName = t[(int)PersonFileSchema.Indices.PrimaryName];

@@ -5,9 +5,9 @@ namespace IMDB_DB.DTO
     public class TitleDto
     {
 
-        public TitleDto( string dataLine, char delimiter )
+        public TitleDto( string dataLine )
         {
-            string[] t = dataLine.Split( delimiter );
+            string[] t = dataLine.Split( Constants.DELIMITER );
 
             ImdbId = t[(int)TitleFileSchema.Indices.ImdbId];
             MediaType = t[(int)TitleFileSchema.Indices.Type];

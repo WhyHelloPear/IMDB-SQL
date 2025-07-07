@@ -5,9 +5,9 @@ namespace IMDB_DB.DTO
     public class PerformanceDto
     {
 
-        public PerformanceDto( string dataLine, char delimiter )
+        public PerformanceDto( string dataLine )
         {
-            string[] t = dataLine.Split( delimiter );
+            string[] t = dataLine.Split( Constants.DELIMITER );
 
             ImdbId = t[(int)PerformanceFileSchema.Indices.ImdbId];
             PersonId = t[(int)PerformanceFileSchema.Indices.PersonId];

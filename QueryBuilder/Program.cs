@@ -9,7 +9,6 @@ using System.Text;
 string baseDataDir = @"E:\MovieLibrary\imdb_sql\data";
 string outputDir = @"E:\MovieLibrary\imdb_sql\sql_output";
 
-// Load secrets.json from the current directory
 var config = new ConfigurationBuilder()
     .SetBasePath( Directory.GetCurrentDirectory() )
     .AddJsonFile( "secrets.json", optional: false, reloadOnChange: true )
@@ -57,8 +56,11 @@ void PrepareScripts()
     //var personBuilder = new PersonBuilder( @$"{outputDir}\persons", @$"{baseDataDir}\{PersonFileSchema.FileName}", "persons_data_insert" );
     //personBuilder.CreateRatingInsertFiles();
 
-    var performanceBuilder = new PerformanceBuilder( @$"{outputDir}\performances", @$"{baseDataDir}\{PerformanceFileSchema.FileName}", "performances_data_insert" );
-    performanceBuilder.CreateRatingInsertFiles();
+    //var performanceBuilder = new PerformanceBuilder( @$"{outputDir}\performances", @$"{baseDataDir}\{PerformanceFileSchema.FileName}", "performances_data_insert" );
+    //performanceBuilder.CreateRatingInsertFiles();
+    
+    var personPositionBuilder = new PersonPositionBuilder( @$"{outputDir}\personPosition", @$"{baseDataDir}\{PersonPositionFileSchema.FileName}", "personPosition_data_insert" );
+    personPositionBuilder.CreateRatingInsertFiles();
 }
 
 async Task InsertAllScripts()
@@ -69,7 +71,8 @@ async Task InsertAllScripts()
     //List<string> titleErrors = await InsertScriptsFromDir( @$"{outputDir}\titles", connection );
     //List<string> ratingErrors = await InsertScriptsFromDir( @$"{outputDir}\ratings", connection );
     //List<string> personErrors = await InsertScriptsFromDir( @$"{outputDir}\persons", connection );
-    List<string> performanceErrors = await InsertScriptsFromDir( @$"{outputDir}\performances", connection );
+    //List<string> performanceErrors = await InsertScriptsFromDir( @$"{outputDir}\performances", connection );
+    List<string> personPositionErrors = await InsertScriptsFromDir( @$"{outputDir}\personPosition", connection );
 
     var errorBuilder = new StringBuilder();
     errorBuilder.AppendLine( "Errors from inserts:" );
@@ -79,40 +82,59 @@ async Task InsertAllScripts()
     //    errorBuilder.AppendLine( error );
     //}
 
+    //errorBuilder.AppendLine( "=======================================" );
     //errorBuilder.AppendLine( "\nRatings:" );
     //foreach( var error in ratingErrors ) {
     //    errorBuilder.AppendLine( error );
     //}
 
+    //errorBuilder.AppendLine( "=======================================" );
     //errorBuilder.AppendLine( "\nPersons:" );
     //foreach( var error in personErrors ) {
     //    errorBuilder.AppendLine( error );
     //}
 
-    errorBuilder.AppendLine( "\nPerformances:" );
-    foreach( var error in performanceErrors ) {
+    //errorBuilder.AppendLine( "=======================================" );
+    //errorBuilder.AppendLine( "\nPerformances:" );
+    //foreach( var error in performanceErrors ) {
+    //    errorBuilder.AppendLine( error );
+    //}
+
+    //errorBuilder.AppendLine( "=======================================" );
+    errorBuilder.AppendLine( "\nPerson Positions:" );
+    foreach( var error in personPositionErrors ) {
         errorBuilder.AppendLine( error );
     }
 
-    Console.WriteLine(errorBuilder.ToString() );
+    Console.WriteLine( errorBuilder.ToString() );
 }
 
 static async Task<List<string>> InsertScriptsFromDir( string outputDir, MySqlConnection connection )
 {
+    string errorDir = $@"{outputDir}\error";
+    string completedDir = $@"{outputDir}\inserted";
+
+    Directory.CreateDirectory( errorDir );
+    Directory.CreateDirectory( completedDir );
+
     int fileCount = 0;
     List<string> insertErrors = new List<string>();
-    foreach( var filePath in Directory.EnumerateFiles( outputDir, "*.sql", SearchOption.AllDirectories ) ) {
+    List<string> targetFiles = Directory.EnumerateFiles( outputDir, "*.sql", SearchOption.TopDirectoryOnly ).ToList();
+    foreach( var filePath in targetFiles ) {
+        var file = Path.GetFileName( filePath );
         string sql = await File.ReadAllTextAsync( filePath );
         try {
             await using var cmd = new MySqlCommand( sql, connection );
             await cmd.ExecuteNonQueryAsync();
             Console.WriteLine( $"Executed: {Path.GetFileName( filePath )}" );
             fileCount++;
+            File.Move( filePath, $@"{completedDir}\{file}" );
         }
         catch( Exception ex ) {
             string message = $"Error in {filePath}: {ex.Message}";
             insertErrors.Add( message );
             Console.WriteLine( message );
+            File.Move( filePath, $@"{errorDir}\{file}" );
         }
     }
 

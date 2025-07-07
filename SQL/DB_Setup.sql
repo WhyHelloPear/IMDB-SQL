@@ -45,4 +45,26 @@ CREATE TABLE Performance (
     CONSTRAINT fk_Performance_Person_PersonImdbId FOREIGN KEY (PersonImdbId) REFERENCES Person(PersonImdbId)
 );
 
+CREATE TABLE TitlePosition (
+    PositionId INT NOT NULL PRIMARY KEY,
+    PositionName VARCHAR(128) NOT NULL,
+    CONSTRAINT uq_TitlePosition UNIQUE (PositionName)
+);
+
+INSERT INTO TitlePosition (PositionId, PositionName)
+VALUES
+    (1, 'Director'),
+    (2, 'Writer');
+
+CREATE TABLE TitlePersonPosition (
+    TitlePersonPositionId INT AUTO_INCREMENT PRIMARY KEY,
+    ImdbId VARCHAR(12) NOT NULL,
+    PersonImdbId VARCHAR(12) NOT NULL,
+    PositionId INT NOT NULL,
+    CONSTRAINT uq_TitlePersonPosition UNIQUE (ImdbId, PersonImdbId, PositionId),
+    CONSTRAINT fk_TitlePersonPosition_ImdbId FOREIGN KEY (ImdbId) REFERENCES MediaTitle(ImdbId),
+    CONSTRAINT fk_TitlePersonPosition_PersonImdbId FOREIGN KEY (PersonImdbId) REFERENCES Person(PersonImdbId),
+    CONSTRAINT fk_TitlePersonPosition_PositionId FOREIGN KEY (PositionId) REFERENCES TitlePosition(PositionId)
+);
+
 FLUSH PRIVILEGES;
