@@ -21,7 +21,7 @@ CREATE TABLE TitleRating (
     ImdbId VARCHAR(12) NOT NULL,
     Rating DECIMAL(4,2) UNSIGNED,
     NumVotes BIGINT,
-    CONSTRAINT fk_TitleRating_MediaTitle_ImdbId FOREIGN KEY (ImdbId) REFERENCES MediaTitle(ImdbId)
+    CONSTRAINT fk_TitleRating_ImdbId FOREIGN KEY (ImdbId) REFERENCES MediaTitle(ImdbId)
 );
 
 CREATE TABLE Person (
@@ -41,8 +41,8 @@ CREATE TABLE Performance (
     Category VARCHAR(64) NOT NULL,
     Job VARCHAR(255) NULL,
     Characters VARCHAR(255) NULL,
-    CONSTRAINT fk_Performance_MediaTitle_ImdbId FOREIGN KEY (ImdbId) REFERENCES MediaTitle(ImdbId),
-    CONSTRAINT fk_Performance_Person_PersonImdbId FOREIGN KEY (PersonImdbId) REFERENCES Person(PersonImdbId)
+    CONSTRAINT fk_Performance_ImdbId FOREIGN KEY (ImdbId) REFERENCES MediaTitle(ImdbId),
+    CONSTRAINT fk_Performance_PersonImdbId FOREIGN KEY (PersonImdbId) REFERENCES Person(PersonImdbId)
 );
 
 CREATE TABLE TitlePosition (
@@ -65,6 +65,19 @@ CREATE TABLE TitlePersonPosition (
     CONSTRAINT fk_TitlePersonPosition_ImdbId FOREIGN KEY (ImdbId) REFERENCES MediaTitle(ImdbId),
     CONSTRAINT fk_TitlePersonPosition_PersonImdbId FOREIGN KEY (PersonImdbId) REFERENCES Person(PersonImdbId),
     CONSTRAINT fk_TitlePersonPosition_PositionId FOREIGN KEY (PositionId) REFERENCES TitlePosition(PositionId)
+);
+
+CREATE TABLE TitleAlias (
+    TitleAliasId INT AUTO_INCREMENT PRIMARY KEY,
+    ImdbId VARCHAR(12) NOT NULL,
+    Ordering INT NOT NULL,
+    TitleAlias VARCHAR(255) NOT NULL,
+    AliasRegion VARCHAR(56) NULL,
+    AliasLanguage VARCHAR(128) NULL,
+    AliasType VARCHAR(255) NULL,
+    AliasAttributes VARCHAR(255) NULL,
+    IsOriginalTitle BOOLEAN NOT NULL,
+    CONSTRAINT fk_TitleAlias_ImdbId FOREIGN KEY (ImdbId) REFERENCES MediaTitle(ImdbId)
 );
 
 FLUSH PRIVILEGES;

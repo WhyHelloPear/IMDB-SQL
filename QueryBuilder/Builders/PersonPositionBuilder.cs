@@ -1,5 +1,4 @@
-﻿using IMDB_DB.DTO;
-using System.Text;
+﻿using System.Text;
 
 namespace IMDB_DB.Builders
 {
@@ -104,5 +103,19 @@ namespace IMDB_DB.Builders
         public const string ImdbIdColName = "ImdbId";
         public const string PersonColName = "PersonImdbId";
         public const string PositionColName = "PositionId";
+    }
+
+    public class TitlePersonPositionDto
+    {
+        public TitlePersonPositionDto( string imdbId, string personImdbId, int positionId )
+        {
+            ImdbId = imdbId;
+            PersonImdbId = personImdbId;
+            PositionId = positionId;
+        }
+
+        public string ImdbId { get; set; }
+        public string PersonImdbId { get; set; }
+        public int PositionId { get; set; }
     }
 }

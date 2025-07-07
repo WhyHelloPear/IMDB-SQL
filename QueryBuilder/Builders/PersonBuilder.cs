@@ -1,5 +1,4 @@
-﻿using IMDB_DB.DTO;
-using System.Text;
+﻿using System.Text;
 
 namespace IMDB_DB.Builders
 {
@@ -100,5 +99,28 @@ namespace IMDB_DB.Builders
         public const string DeathYearColName = "DeathYear";
         public const string PrimaryProfessionColName = "PrimaryProfession";
         public const string KnownForTitlesColName = "KnownForTitles";
+    }
+
+    public class PersonDto
+    {
+
+        public PersonDto( string dataLine )
+        {
+            string[] t = dataLine.Split( Constants.DELIMITER );
+
+            PersonId = t[(int)PersonFileSchema.Indices.PersonId];
+            PrimaryName = t[(int)PersonFileSchema.Indices.PrimaryName];
+            BirthYear = t[(int)PersonFileSchema.Indices.BirthYear];
+            DeathYear = t[(int)PersonFileSchema.Indices.DeathYear];
+            PrimaryProfession = t[(int)PersonFileSchema.Indices.PrimaryProfession];
+            KnownForTitles = t[(int)PersonFileSchema.Indices.KnownForTitles];
+        }
+
+        public string PersonId { get; set; }
+        public string PrimaryName { get; set; }
+        public string BirthYear { get; set; }
+        public string DeathYear { get; set; }
+        public string PrimaryProfession { get; set; }
+        public string KnownForTitles { get; set; }
     }
 }

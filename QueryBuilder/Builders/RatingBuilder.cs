@@ -1,5 +1,4 @@
-﻿using IMDB_DB.DTO;
-using System.Text;
+﻿using System.Text;
 
 namespace IMDB_DB.Builders
 {
@@ -89,5 +88,26 @@ namespace IMDB_DB.Builders
         public const string ImdbIdColName = "ImdbId";
         public const string RatingColName = "Rating";
         public const string NumVotesColName = "NumVotes";
+    }
+
+    public class RatingDto
+    {
+        public RatingDto( string dataLine )
+        {
+            string[] t = dataLine.Split( Constants.DELIMITER );
+
+            ImdbId = t[(int)RatingFileSchema.Indices.ImdbId];
+            if( decimal.TryParse( t[(int)RatingFileSchema.Indices.Rating], out decimal rating ) ) {
+                Rating = rating;
+            }
+
+            if( int.TryParse( t[(int)RatingFileSchema.Indices.NumVotes], out int numVotes ) ) {
+                NumVotes = numVotes;
+            }
+        }
+
+        public string ImdbId { get; set; }
+        public decimal Rating { get; set; } = 0;
+        public int NumVotes { get; set; } = 0;
     }
 }

@@ -2,7 +2,7 @@
  
 Download IMDB datasets from here: https://developer.imdb.com/non-commercial-datasets/
 - name.basics.tsv &#9745;
-- title.akas.tsv &#x2610;
+- title.akas.tsv &#9745;
 - title.basics.tsv &#9745;
 - title.crew.tsv &#9745;
 - title.episode.tsv &#x2610;
