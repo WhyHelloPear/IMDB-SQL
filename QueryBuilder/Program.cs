@@ -1,6 +1,5 @@
 ﻿using IMDB_DB;
 using Microsoft.Extensions.Configuration;
-using MySqlConnector;
 using System.Text;
 
 
@@ -11,6 +10,12 @@ var config = new ConfigurationBuilder()
     .Build();
 
 string IMDB_ConnectionString = config.GetSection( "IMDB_ConnectionString" ).Value;
+
+//string outputDir = @"D:\IMDB_SQL\sql_output";
+string outputDir = @"E:\MovieLibrary\imdb_sql\sql_output";
+
+//string baseDataDir = @"D:\IMDB_SQL\data";
+string baseDataDir = @"E:\MovieLibrary\imdb_sql\data";
 
 bool isExitInput = false;
 while( !isExitInput ) {
@@ -29,10 +34,10 @@ while( !isExitInput ) {
             Console.WriteLine( "Exiting...Goodbye!" );
             break;
         case "1":
-            HandlePrepareScriptsChoise();
+            HandlePrepareScriptsChoice();
             break;
         case "2":
-            await InsertAllScripts();
+            await HandleInsertScriptsChoice();
             break;
         default:
             Console.WriteLine( "Invalid option.\n\n" );
@@ -40,13 +45,9 @@ while( !isExitInput ) {
     }
 }
 
-void HandlePrepareScriptsChoise()
+void HandlePrepareScriptsChoice()
 {
-    //string baseDataDir = @"D:\IMDB_SQL\data";
-    //string outputDir = @"D:\IMDB_SQL\sql_output";
-
-    string baseDataDir = @"E:\MovieLibrary\imdb_sql\data";
-    string outputDir = @"E:\MovieLibrary\imdb_sql\sql_output";
+    
 
     var factory = new BuilderFactory( baseDataDir, outputDir );
 
@@ -100,82 +101,77 @@ void HandlePrepareScriptsChoise()
 }
 
 
-
-
-async Task InsertAllScripts()
+async Task HandleInsertScriptsChoice()
 {
-    await using var connection = new MySqlConnection( IMDB_ConnectionString );
-    await connection.OpenAsync();
+    
 
-    //List<string> titleErrors = await InsertScriptsFromDir( @$"{outputDir}\titles", connection );
-    //List<string> ratingErrors = await InsertScriptsFromDir( @$"{outputDir}\ratings", connection );
-    //List<string> personErrors = await InsertScriptsFromDir( @$"{outputDir}\persons", connection );
-    //List<string> performanceErrors = await InsertScriptsFromDir( @$"{outputDir}\performances", connection );
-    List<string> personPositionErrors = await InsertScriptsFromDir( @$"{outputDir}\personPosition", connection );
+    var factory = new InsertFactory( IMDB_ConnectionString, outputDir );
 
+    bool isExitInput = false;
+    while( !isExitInput ) {
+        var userMenuBuilder = new StringBuilder();
+        userMenuBuilder.AppendLine( "Choose an option:" );
+        userMenuBuilder.AppendLine( "1. All" );
+        userMenuBuilder.AppendLine( "2. Titles" );
+        userMenuBuilder.AppendLine( "3. Persons" );
+        userMenuBuilder.AppendLine( "4. Performance" );
+        userMenuBuilder.AppendLine( "5. PersonPosition (director/writer)" );
+        userMenuBuilder.AppendLine( "6. Title Alias" );
+        userMenuBuilder.AppendLine( "7. Title Ratings" );
+        userMenuBuilder.AppendLine( "0. Exit" );
+        userMenuBuilder.AppendLine( "=============================" );
+        Console.WriteLine( userMenuBuilder.ToString() );
+
+        var errors = new List<string>();
+
+        var input = Console.ReadLine();
+        switch( input ) {
+            case "0":
+                isExitInput = true;
+                Console.WriteLine( "Exiting...Goodbye!" );
+                break;
+            case "1":
+                errors = await factory.InsertAll();
+                WriteErrorsToConsole( errors );
+                break;
+            case "2": //titles
+                errors = await factory.InsertTitlesSql();
+                WriteErrorsToConsole( errors );
+                break;
+            case "3": //persons
+                errors = await factory.InsertPersonsSql();
+                WriteErrorsToConsole( errors );
+                break;
+            case "4": //performances
+                errors = await factory.InsertPerformancesSql();
+                WriteErrorsToConsole( errors );
+                break;
+            case "5": //person positions
+                errors = await factory.InsertPersonPositionSql();
+                WriteErrorsToConsole( errors );
+                break;
+            case "6": //aliases
+                errors = await factory.InsertAliasSql();
+                WriteErrorsToConsole( errors );
+                break;
+            case "7": //ratings
+                errors = await factory.InsertRatingsSql();
+                WriteErrorsToConsole( errors );
+                break;
+            default:
+                Console.WriteLine( "Invalid option.\n\n" );
+                break;
+        }
+    }
+}
+void WriteErrorsToConsole( List<string> errors )
+{
     var errorBuilder = new StringBuilder();
     errorBuilder.AppendLine( "Errors from inserts:" );
 
-    //errorBuilder.AppendLine( "Titles:" );
-    //foreach( var error in titleErrors ) {
-    //    errorBuilder.AppendLine( error );
-    //}
-
-    //errorBuilder.AppendLine( "=======================================" );
-    //errorBuilder.AppendLine( "\nRatings:" );
-    //foreach( var error in ratingErrors ) {
-    //    errorBuilder.AppendLine( error );
-    //}
-
-    //errorBuilder.AppendLine( "=======================================" );
-    //errorBuilder.AppendLine( "\nPersons:" );
-    //foreach( var error in personErrors ) {
-    //    errorBuilder.AppendLine( error );
-    //}
-
-    //errorBuilder.AppendLine( "=======================================" );
-    //errorBuilder.AppendLine( "\nPerformances:" );
-    //foreach( var error in performanceErrors ) {
-    //    errorBuilder.AppendLine( error );
-    //}
-
-    //errorBuilder.AppendLine( "=======================================" );
-    errorBuilder.AppendLine( "\nPerson Positions:" );
-    foreach( var error in personPositionErrors ) {
+    foreach( var error in errors ) {
         errorBuilder.AppendLine( error );
     }
 
     Console.WriteLine( errorBuilder.ToString() );
-}
-
-static async Task<List<string>> InsertScriptsFromDir( string outputDir, MySqlConnection connection )
-{
-    string errorDir = $@"{outputDir}\error";
-    string completedDir = $@"{outputDir}\inserted";
-
-    Directory.CreateDirectory( errorDir );
-    Directory.CreateDirectory( completedDir );
-
-    int fileCount = 0;
-    List<string> insertErrors = new List<string>();
-    List<string> targetFiles = Directory.EnumerateFiles( outputDir, "*.sql", SearchOption.TopDirectoryOnly ).ToList();
-    foreach( var filePath in targetFiles ) {
-        var file = Path.GetFileName( filePath );
-        string sql = await File.ReadAllTextAsync( filePath );
-        try {
-            await using var cmd = new MySqlCommand( sql, connection );
-            await cmd.ExecuteNonQueryAsync();
-            Console.WriteLine( $"Executed: {Path.GetFileName( filePath )}" );
-            fileCount++;
-            File.Move( filePath, $@"{completedDir}\{file}" );
-        }
-        catch( Exception ex ) {
-            string message = $"Error in {filePath}: {ex.Message}";
-            insertErrors.Add( message );
-            Console.WriteLine( message );
-            File.Move( filePath, $@"{errorDir}\{file}" );
-        }
-    }
-
-    return insertErrors;
 }

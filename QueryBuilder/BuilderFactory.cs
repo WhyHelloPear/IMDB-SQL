@@ -1,5 +1,4 @@
-﻿
-using IMDB_DB.Builders;
+﻿using IMDB_DB.Builders;
 
 namespace IMDB_DB
 {
