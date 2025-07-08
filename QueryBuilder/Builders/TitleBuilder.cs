@@ -1,15 +1,15 @@
-﻿using System.Linq;
-using System.Text;
-using static IMDB_DB.Constants;
+﻿using static IMDB_DB.Constants;
 
 namespace IMDB_DB.Builders
 {
     internal class TitleBuilder : BaseBuilder
     {
         private string TargetDataFile => $@"{_inputDataBaseDir}\{FileSchema.FileName}";
-        public TitleBuilder( string outputDir, string inputDataFile, string fileName ) : base (outputDir, inputDataFile, fileName) {
+        public TitleBuilder( string outputDir, string inputDataFile, string fileName ) : base( outputDir, inputDataFile, fileName )
+        {
             List<string> columnNames = new List<string> {
                 SqlSchemaInfo.ColumnNames.ImdbId,
+                SqlSchemaInfo.ColumnNames.Original_ImdbId,
                 SqlSchemaInfo.ColumnNames.TitleType,
                 SqlSchemaInfo.ColumnNames.PrimaryTitle,
                 SqlSchemaInfo.ColumnNames.OriginalTitle,
@@ -63,6 +63,7 @@ namespace IMDB_DB.Builders
             List<string> valueRows = values.Where( v => v != null ).Select( dto => {
                 List<string> values = new List<string> {
                     dto.ImdbId.ToString(),
+                    dto.Original_ImdbId,
                     dto.MediaType,
                     dto.PrimaryTitle,
                     dto.OriginalTitle,
@@ -110,6 +111,7 @@ namespace IMDB_DB.Builders
                 public const string EndYear = "EndYear";
                 public const string RuntimeMinutes = "RuntimeMinutes";
                 public const string Genres = "Genres";
+                public const string Original_ImdbId = "Original_ImdbId";
             }
         }
 
@@ -120,6 +122,8 @@ namespace IMDB_DB.Builders
                 string[] t = dataLine.Split( DataParsing.DELIMITER );
 
                 ImdbId = t[(int)FileSchema.Indices.ImdbId].ParseImdbId( ImdbIdPrefix.Title );
+                Original_ImdbId = t[(int)FileSchema.Indices.ImdbId];
+
                 MediaType = t[(int)FileSchema.Indices.Type];
                 PrimaryTitle = t[(int)FileSchema.Indices.PrimaryTitle];
                 OriginalTitle = t[(int)FileSchema.Indices.OriginalTitle];
@@ -145,6 +149,7 @@ namespace IMDB_DB.Builders
             public string EndYear { get; set; }
             public int RuntimeMinutes { get; set; }
             public string Genres { get; set; }
+            public string Original_ImdbId { get; set; }
         }
     }
 }

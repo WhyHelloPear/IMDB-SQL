@@ -9,6 +9,7 @@ namespace IMDB_DB.Builders
         public PersonBuilder( string outputDir, string inputDataFile, string fileName ) : base (outputDir, inputDataFile, fileName) {
             List<string> columnNames = new List<string> {
                 SqlSchemaInfo.ColumnNames.PersonImdbId,
+                SqlSchemaInfo.ColumnNames.Original_PersonImdbId,
                 SqlSchemaInfo.ColumnNames.PrimaryName,
                 SqlSchemaInfo.ColumnNames.BirthYear,
                 SqlSchemaInfo.ColumnNames.DeathYear,
@@ -59,6 +60,7 @@ namespace IMDB_DB.Builders
             List<string> valueRows = values.Where( v => v != null ).Select( dto => {
                 List<string> values = new List<string> {
                     dto.PersonId.ToString(),
+                    dto.Original_PersonId,
                     dto.PrimaryName,
                     dto.BirthYear,
                     dto.DeathYear,
@@ -97,6 +99,7 @@ namespace IMDB_DB.Builders
                 public const string DeathYear = "DeathYear";
                 public const string PrimaryProfession = "PrimaryProfession";
                 public const string KnownForTitles = "KnownForTitles";
+                public const string Original_PersonImdbId = "Original_PersonImdbId";
             }
         }
 
@@ -108,6 +111,8 @@ namespace IMDB_DB.Builders
                 string[] t = dataLine.Split( DataParsing.DELIMITER );
 
                 PersonId = t[(int)FileSchema.Indices.PersonId].ParseImdbId( ImdbIdPrefix.Person );
+                Original_PersonId = t[(int)FileSchema.Indices.PersonId];
+
                 PrimaryName = t[(int)FileSchema.Indices.PrimaryName];
                 BirthYear = t[(int)FileSchema.Indices.BirthYear];
                 DeathYear = t[(int)FileSchema.Indices.DeathYear];
@@ -121,6 +126,7 @@ namespace IMDB_DB.Builders
             public string DeathYear { get; set; }
             public string PrimaryProfession { get; set; }
             public string KnownForTitles { get; set; }
+            public string Original_PersonId { get; set; }
         }
     }
 }

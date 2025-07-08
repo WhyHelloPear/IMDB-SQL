@@ -6,7 +6,6 @@ namespace IMDB_DB
     {
         public static void WriteBatchFile( string outputDir, string baseFileName, string headerRow, List<string> valueRows, int currentBatchCount )
         {
-
             Directory.CreateDirectory( outputDir );
 
             string fileName = $"{baseFileName}{( currentBatchCount == 0 ? string.Empty : $"_{currentBatchCount}" )}.sql";
@@ -31,6 +30,15 @@ namespace IMDB_DB
             }
 
             return value.Length <= maxLength ? value : value.Substring( 0, maxLength );
+        }
+        
+        public static string CleanSqlValue( this string value )
+        {
+            if( string.IsNullOrEmpty( value ) ) {
+                return value;
+            }
+
+            return value.Truncate( 255 ).Replace( @"\N", "NULL" ).Replace( @"\'", "'" ).Replace( @"/'", "'" ).Replace( "'", "''" );
         }
 
         public static long ParseImdbId( this string imdbId, string expectedPrefix )

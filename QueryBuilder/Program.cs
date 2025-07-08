@@ -21,6 +21,7 @@ while( !isExitInput ) {
     userMenuBuilder.AppendLine( "Choose an option:" );
     userMenuBuilder.AppendLine( "1. Create INSERT SQL scripts" );
     userMenuBuilder.AppendLine( "2. Insert SQL scripts" );
+    userMenuBuilder.AppendLine( "3. Get Unique Values" );
     userMenuBuilder.AppendLine( "0. Exit" );
     userMenuBuilder.AppendLine( "=============================" );
     Console.WriteLine( userMenuBuilder.ToString() );
@@ -37,9 +38,41 @@ while( !isExitInput ) {
         case "2":
             await HandleInsertScriptsChoice();
             break;
+        case "3":
+            await HandleUniqueValueChoice();
+            break;
         default:
             Console.WriteLine( "Invalid option.\n\n" );
             break;
+    }
+}
+
+async Task HandleUniqueValueChoice()
+{
+    var factory = new UniquePerformance( baseDataDir, $@"{outputDir}\info" );
+
+    bool isExitInput = false;
+    while( !isExitInput ) {
+        var userMenuBuilder = new StringBuilder();
+        userMenuBuilder.AppendLine( "\n=============================" );
+        userMenuBuilder.AppendLine( "Choose an option:" );
+        userMenuBuilder.AppendLine( "1. Professions" );
+        userMenuBuilder.AppendLine( "0. Back" );
+        userMenuBuilder.AppendLine( "=============================" );
+        Console.WriteLine( userMenuBuilder.ToString() );
+
+        var input = Console.ReadLine();
+        switch( input ) {
+            case "0":
+                isExitInput = true;
+                break;
+            case "1":
+                factory.DoStuff();
+                break;
+            default:
+                Console.WriteLine( "Invalid option.\n\n" );
+                break;
+        }
     }
 }
 
@@ -166,6 +199,7 @@ async Task HandleInsertScriptsChoice()
         }
     }
 }
+
 void WriteErrorsToConsole( List<string> errors )
 {
     var errorBuilder = new StringBuilder();
