@@ -21,11 +21,12 @@ namespace IMDB_DB
             BuildPerformancesSql();
             BuildPersonPositionSql();
             BuildAliasSql();
+            BuildEpisodesSql();
         }
 
         public void BuildAliasSql()
         {
-            var titleAliasBuilder = new TitleAliasBuilder( @$"{_baseOutputDir}\titleAlias", _baseDataInputDir, "personPosition_data_insert" );
+            var titleAliasBuilder = new TitleAliasBuilder( @$"{_baseOutputDir}\titleAlias", _baseDataInputDir, "titleAlias_data_insert" );
             titleAliasBuilder.CreateRatingInsertFiles();
         }
 
@@ -57,6 +58,12 @@ namespace IMDB_DB
         {
             var personBuilder = new PersonBuilder( @$"{_baseOutputDir}\persons", _baseDataInputDir, "persons_data_insert" );
             personBuilder.CreateRatingInsertFiles();
+        }
+        
+        public void BuildEpisodesSql()
+        {
+            var episodeBuilder = new EpisodeBuilder( @$"{_baseOutputDir}\episodes", _baseDataInputDir, "episodes_data_insert" );
+            episodeBuilder.CreateRatingInsertFiles();
         }
     }
 }

@@ -1,19 +1,17 @@
-﻿using System.Text;
-using static IMDB_DB.Constants;
+﻿using static IMDB_DB.Constants;
 
 namespace IMDB_DB.Builders
 {
-    internal class PerformanceBuilder : BaseBuilder
+    internal class EpisodeBuilder : BaseBuilder
     {
         private string TargetDataFile => $@"{_inputDataBaseDir}\{FileSchema.FileName}";
-        public PerformanceBuilder( string outputDir, string inputDataFile, string fileName ) : base (outputDir, inputDataFile, fileName) {
+        public EpisodeBuilder( string outputDir, string inputDataFile, string fileName ) : base( outputDir, inputDataFile, fileName )
+        {
             List<string> columnNames = new List<string> {
-                SqlSchemaInfo.ColumnNames.ImdbId,
-                SqlSchemaInfo.ColumnNames.Ordering,
-                SqlSchemaInfo.ColumnNames.PersonImdbId,
-                SqlSchemaInfo.ColumnNames.Category,
-                SqlSchemaInfo.ColumnNames.Job,
-                SqlSchemaInfo.ColumnNames.Characters,
+                SqlSchemaInfo.ColumnNames.EpisodeImdbId,
+                SqlSchemaInfo.ColumnNames.SeriesImdbId,
+                SqlSchemaInfo.ColumnNames.SeasonNumber,
+                SqlSchemaInfo.ColumnNames.EpisodeNumber,
             };
 
             _insertHeader = StaticHandler.CreateInsertHeaderRow( SqlSchemaInfo.Table, columnNames );
@@ -58,45 +56,40 @@ namespace IMDB_DB.Builders
         {
             List<string> valueRows = values.Where( v => v != null ).Select( dto => {
                 List<string> values = new List<string> {
-                    dto.ImdbId.ToString(),
-                    dto.Ordering.ToString(),
-                    dto.PersonId.ToString(),
-                    dto.Category,
-                    dto.Job,
-                    dto.Characters,
+                    dto.EpisodeImdbId.ToString(),
+                    dto.SeriesImdbId.ToString(),
+                    dto.SeasonNumber,
+                    dto.EpisodeNumber,
                 };
 
                 return StaticHandler.CreateInsertRowFromValues( values );
+
             } ).ToList();
 
             StaticHandler.WriteBatchFile( _outputDir, _fileName, _insertHeader, valueRows, currentBatchCount );
         }
-        
+
         private static class FileSchema
         {
-            public const string FileName = "title.principals.tsv";
+            public const string FileName = "title.episode.tsv";
             public enum Indices
             {
-                ImdbId = 0,
-                Ordering,
-                PersonId,
-                Category,
-                Job,
-                Characters
+                EpisodeImdbId = 0,
+                SeriesImdbId,
+                SeasonNumber,
+                EpisodeNumber,
             }
         }
 
         private static class SqlSchemaInfo
         {
-            public const string Table = "Performance";
+            public const string Table = "TitleEpisode";
             public static class ColumnNames
             {
-                public const string ImdbId = "ImdbId";
-                public const string Ordering = "Ordering";
-                public const string PersonImdbId = "PersonImdbId";
-                public const string Category = "Category";
-                public const string Job = "Job";
-                public const string Characters = "Characters";
+                public const string EpisodeImdbId = "EpisodeImdbId";
+                public const string SeriesImdbId = "SeriesImdbId";
+                public const string SeasonNumber = "SeasonNumber";
+                public const string EpisodeNumber = "EpisodeNumber";
             }
         }
 
@@ -106,23 +99,16 @@ namespace IMDB_DB.Builders
             {
                 string[] t = dataLine.Split( DataParsing.DELIMITER );
 
-                ImdbId = t[(int)FileSchema.Indices.ImdbId].ParseImdbId( ImdbIdPrefix.Title );
-                PersonId = t[(int)FileSchema.Indices.PersonId].ParseImdbId( ImdbIdPrefix.Person );
-                Category = t[(int)FileSchema.Indices.Category];
-                Job = t[(int)FileSchema.Indices.Job];
-                Characters = t[(int)FileSchema.Indices.Characters];
-
-                if( int.TryParse( t[(int)FileSchema.Indices.Ordering], out int order ) ) {
-                    Ordering = order;
-                }
+                EpisodeImdbId = t[(int)FileSchema.Indices.EpisodeImdbId].ParseImdbId( ImdbIdPrefix.Title );
+                SeriesImdbId = t[(int)FileSchema.Indices.SeriesImdbId].ParseImdbId( ImdbIdPrefix.Title );
+                SeasonNumber = t[(int)FileSchema.Indices.SeasonNumber];
+                EpisodeNumber = t[(int)FileSchema.Indices.EpisodeNumber];
             }
 
-            public long ImdbId { get; set; }
-            public long PersonId { get; set; }
-            public int Ordering { get; set; }
-            public string Category { get; set; }
-            public string Job { get; set; }
-            public string Characters { get; set; }
+            public long EpisodeImdbId { get; set; }
+            public long SeriesImdbId { get; set; }
+            public string SeasonNumber { get; set; }
+            public string EpisodeNumber { get; set; }
         }
     }
 }

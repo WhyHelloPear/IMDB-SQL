@@ -2,8 +2,6 @@
 using Microsoft.Extensions.Configuration;
 using System.Text;
 
-
-
 var config = new ConfigurationBuilder()
     .SetBasePath( Directory.GetCurrentDirectory() )
     .AddJsonFile( "secrets.json", optional: false, reloadOnChange: true )
@@ -47,13 +45,12 @@ while( !isExitInput ) {
 
 void HandlePrepareScriptsChoice()
 {
-    
-
     var factory = new BuilderFactory( baseDataDir, outputDir );
 
     bool isExitInput = false;
     while( !isExitInput ) {
         var userMenuBuilder = new StringBuilder();
+        userMenuBuilder.AppendLine( "\n=============================" );
         userMenuBuilder.AppendLine( "Choose an option:" );
         userMenuBuilder.AppendLine( "1. All" );
         userMenuBuilder.AppendLine( "2. Titles" );
@@ -62,7 +59,8 @@ void HandlePrepareScriptsChoice()
         userMenuBuilder.AppendLine( "5. PersonPosition (director/writer)" );
         userMenuBuilder.AppendLine( "6. Title Alias" );
         userMenuBuilder.AppendLine( "7. Title Ratings" );
-        userMenuBuilder.AppendLine( "0. Exit" );
+        userMenuBuilder.AppendLine( "8. Episodes" );
+        userMenuBuilder.AppendLine( "0. Back" );
         userMenuBuilder.AppendLine( "=============================" );
         Console.WriteLine( userMenuBuilder.ToString() );
 
@@ -70,7 +68,6 @@ void HandlePrepareScriptsChoice()
         switch( input ) {
             case "0":
                 isExitInput = true;
-                Console.WriteLine( "Exiting...Goodbye!" );
                 break;
             case "1":
                 factory.BuildAll();
@@ -93,6 +90,9 @@ void HandlePrepareScriptsChoice()
             case "7": //ratings
                 factory.BuildRatingsSql();
                 break;
+            case "8": //episodes
+                factory.BuildEpisodesSql();
+                break;
             default:
                 Console.WriteLine( "Invalid option.\n\n" );
                 break;
@@ -100,16 +100,14 @@ void HandlePrepareScriptsChoice()
     }
 }
 
-
 async Task HandleInsertScriptsChoice()
 {
-    
-
     var factory = new InsertFactory( IMDB_ConnectionString, outputDir );
 
     bool isExitInput = false;
     while( !isExitInput ) {
         var userMenuBuilder = new StringBuilder();
+        userMenuBuilder.AppendLine( "\n=============================" );
         userMenuBuilder.AppendLine( "Choose an option:" );
         userMenuBuilder.AppendLine( "1. All" );
         userMenuBuilder.AppendLine( "2. Titles" );
@@ -118,7 +116,8 @@ async Task HandleInsertScriptsChoice()
         userMenuBuilder.AppendLine( "5. PersonPosition (director/writer)" );
         userMenuBuilder.AppendLine( "6. Title Alias" );
         userMenuBuilder.AppendLine( "7. Title Ratings" );
-        userMenuBuilder.AppendLine( "0. Exit" );
+        userMenuBuilder.AppendLine( "8. Episodes" );
+        userMenuBuilder.AppendLine( "0. Back" );
         userMenuBuilder.AppendLine( "=============================" );
         Console.WriteLine( userMenuBuilder.ToString() );
 
@@ -128,7 +127,6 @@ async Task HandleInsertScriptsChoice()
         switch( input ) {
             case "0":
                 isExitInput = true;
-                Console.WriteLine( "Exiting...Goodbye!" );
                 break;
             case "1":
                 errors = await factory.InsertAll();
@@ -156,6 +154,10 @@ async Task HandleInsertScriptsChoice()
                 break;
             case "7": //ratings
                 errors = await factory.InsertRatingsSql();
+                WriteErrorsToConsole( errors );
+                break;
+            case "8": //episodes
+                errors = await factory.InsertEpisodesSql();
                 WriteErrorsToConsole( errors );
                 break;
             default:

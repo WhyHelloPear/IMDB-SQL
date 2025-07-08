@@ -1,25 +1,29 @@
-﻿using System.Text;
+﻿using static IMDB_DB.Constants;
 
 namespace IMDB_DB.Builders
 {
     internal class TitleAliasBuilder : BaseBuilder
     {
-        public TitleAliasBuilder( string outputDir, string inputDataFile, string fileName ) : base (outputDir, inputDataFile, fileName) {
-            var headerBuilder = new StringBuilder();
-            headerBuilder.AppendLine( "USE IMDB;" );
-            headerBuilder.Append( $"INSERT INTO {SqlSchemaInfo.Table} (" );
-            headerBuilder.Append( $"{SqlSchemaInfo.ColumnNames.ImdbId}, {SqlSchemaInfo.ColumnNames.Ordering}, {SqlSchemaInfo.ColumnNames.TitleAlias}" );
-            headerBuilder.Append( $"{SqlSchemaInfo.ColumnNames.AliasRegion}, {SqlSchemaInfo.ColumnNames.AliasLanguage}, {SqlSchemaInfo.ColumnNames.AliasType}" );
-            headerBuilder.Append( $", {SqlSchemaInfo.ColumnNames.AliasAttributes}, {SqlSchemaInfo.ColumnNames.IsOriginalTitle}" );
-            headerBuilder.AppendLine( " )" );
-            headerBuilder.Append( $"VALUES" );
+        private string TargetDataFile => $@"{_inputDataBaseDir}\{FileSchema.FileName}";
+        public TitleAliasBuilder( string outputDir, string inputDataFile, string fileName ) : base( outputDir, inputDataFile, fileName )
+        {
+            List<string> columnNames = new List<string> {
+                SqlSchemaInfo.ColumnNames.ImdbId,
+                SqlSchemaInfo.ColumnNames.Ordering,
+                SqlSchemaInfo.ColumnNames.TitleAlias,
+                SqlSchemaInfo.ColumnNames.AliasRegion,
+                SqlSchemaInfo.ColumnNames.AliasLanguage,
+                SqlSchemaInfo.ColumnNames.AliasType,
+                SqlSchemaInfo.ColumnNames.AliasAttributes,
+                SqlSchemaInfo.ColumnNames.IsOriginalTitle,
+            };
 
-            _insertHeader = headerBuilder.ToString();
+            _insertHeader = StaticHandler.CreateInsertHeaderRow( SqlSchemaInfo.Table, columnNames );
         }
 
         public override void CreateRatingInsertFiles()
         {
-            using var reader = new StreamReader( _inputDataFile );
+            using var reader = new StreamReader( TargetDataFile );
 
             int batchSize = 1000; // Number of rows per INSERT statement
             var valueBatch = new Dto[batchSize];
@@ -55,28 +59,26 @@ namespace IMDB_DB.Builders
         private void WriteBatchFile( Dto[] values, int currentBatchCount )
         {
             List<string> valueRows = values.Where( v => v != null ).Select( dto => {
-                var rowBuilder = new StringBuilder();
-                rowBuilder.Append( "\t( " );
-                rowBuilder.Append( $" '{dto.ImdbId}'" );
-                rowBuilder.Append( $" '{dto.Ordering}'" );
-                rowBuilder.Append( $", '{dto.TitleAlias.Truncate( 255 ).Replace( @"\'", "'" ).Replace( @"/'", "'" ).Replace( "'", "''" )}'" );
-                rowBuilder.Append( $", '{dto.AliasRegion.Replace( @"\N", "NULL" )}'" );
-                rowBuilder.Append( $", '{dto.AliasLanguage.Replace( @"\N", "NULL" )}'" );
-                rowBuilder.Append( $", '{dto.AliasType.Replace( @"\N", "NULL" )}'" );
-                rowBuilder.Append( $", '{dto.AliasAttributes.Truncate( 255 ).Replace( @"\N", "NULL" ).Replace( @"\'", "'" ).Replace( @"/'", "'" ).Replace( "'", "''" )}'" );
-                rowBuilder.Append( $" '{dto.IsOriginalTitle}'" );
-                rowBuilder.Append( ")," );
-                return rowBuilder.ToString();
-            } ).ToList();
+                List<string> values = new List<string> {
+                    dto.ImdbId.ToString(),
+                    dto.Ordering.ToString(),
+                    dto.TitleAlias,
+                    dto.AliasRegion,
+                    dto.AliasLanguage,
+                    dto.AliasType,
+                    dto.AliasAttributes,
+                    dto.IsOriginalTitle ? "1" : "0"
+                };
 
-            valueRows[valueRows.Count - 1] = valueRows.Last().TrimEnd( ',' );
+                return StaticHandler.CreateInsertRowFromValues( values );
+            } ).ToList();
 
             StaticHandler.WriteBatchFile( _outputDir, _fileName, _insertHeader, valueRows, currentBatchCount );
         }
 
         private static class FileSchema
         {
-            public const string FileName = "name.basics.tsv";
+            public const string FileName = "title.akas.tsv";
             public enum Indices
             {
                 ImdbId = 0,
@@ -92,7 +94,7 @@ namespace IMDB_DB.Builders
 
         private static class SqlSchemaInfo
         {
-            public const string Table = "Person";
+            public const string Table = "TitleAlias";
             public static class ColumnNames
             {
                 public const string ImdbId = "ImdbId";
@@ -110,25 +112,23 @@ namespace IMDB_DB.Builders
         {
             public Dto( string dataLine )
             {
-                string[] t = dataLine.Split( Constants.DELIMITER );
+                string[] t = dataLine.Split( DataParsing.DELIMITER );
 
-                ImdbId = t[(int)FileSchema.Indices.ImdbId];
+                ImdbId = t[(int)FileSchema.Indices.ImdbId].ParseImdbId( ImdbIdPrefix.Title );
                 TitleAlias = t[(int)FileSchema.Indices.TitleAlias];
                 AliasRegion = t[(int)FileSchema.Indices.AliasRegion];
                 AliasLanguage = t[(int)FileSchema.Indices.AliasLanguage];
                 AliasType = t[(int)FileSchema.Indices.AliasType];
                 AliasAttributes = t[(int)FileSchema.Indices.AliasAttributes];
 
-                if( int.TryParse( t[(int)FileSchema.Indices.AliasAttributes], out int order ) ) {
-                    Ordering = order;
-                }
+                IsOriginalTitle = t[(int)FileSchema.Indices.IsOriginalTitle] == "1";
 
-                if( bool.TryParse( t[(int)FileSchema.Indices.IsOriginalTitle], out bool isOriginal ) ) {
-                    IsOriginalTitle = isOriginal;
+                if( int.TryParse( t[(int)FileSchema.Indices.Ordering], out int order ) ) {
+                    Ordering = order;
                 }
             }
 
-            public string ImdbId { get; set; }
+            public long ImdbId { get; set; }
             public int Ordering { get; set; }
             public string TitleAlias { get; set; }
             public string AliasRegion { get; set; }

@@ -1,21 +1,25 @@
-﻿using System.Text;
+﻿using System.Linq;
+using System.Text;
+using static IMDB_DB.Constants;
 
 namespace IMDB_DB.Builders
 {
     internal class RatingBuilder : BaseBuilder
     {
+        private string TargetDataFile => $@"{_inputDataBaseDir}\{FileSchema.FileName}";
         public RatingBuilder( string outputDir, string inputDataFile, string fileName ) : base (outputDir, inputDataFile, fileName) {
-            var headerBuilder = new StringBuilder();
-            headerBuilder.AppendLine( "USE IMDB;" );
-            headerBuilder.AppendLine( $"INSERT INTO {FileSchema.SqlTableName} ( {FileSchema.ImdbIdColName}, {FileSchema.RatingColName}, {FileSchema.NumVotesColName} )" );
-            headerBuilder.Append( $"VALUES" );
+            List<string> columnNames = new List<string> {
+                SqlSchemaInfo.ColumnNames.ImdbId,
+                SqlSchemaInfo.ColumnNames.Rating,
+                SqlSchemaInfo.ColumnNames.NumVotes,
+            };
 
-            _insertHeader = headerBuilder.ToString();
+            _insertHeader = StaticHandler.CreateInsertHeaderRow( SqlSchemaInfo.Table, columnNames );
         }
 
         public override void CreateRatingInsertFiles()
         {
-            using var reader = new StreamReader( _inputDataFile );
+            using var reader = new StreamReader( TargetDataFile );
 
             int batchSize = 1000; // Number of rows per INSERT statement
             var valueBatch = new Dto[batchSize];
@@ -51,44 +55,48 @@ namespace IMDB_DB.Builders
         private void WriteBatchFile( Dto[] values, int currentBatchCount )
         {
            List<string> valueRows = values.Where( v => v != null ).Select( dto => {
-                var rowBuilder = new StringBuilder();
-                rowBuilder.Append( "\t" );
-                rowBuilder.Append( $"( '{dto.ImdbId}'" );
-                rowBuilder.Append( $", '{dto.Rating}'" );
-                rowBuilder.Append( $", '{dto.NumVotes}' )," );
-                return rowBuilder.ToString();
-            } ).ToList();
+               List<string> values = new List<string> {
+                    dto.ImdbId.ToString(),
+                    dto.Rating.ToString(),
+                    dto.NumVotes.ToString(),
+                };
 
-            valueRows[valueRows.Count - 1] = valueRows.Last().TrimEnd( ',' );
+               return StaticHandler.CreateInsertRowFromValues( values );
 
+           } ).ToList();
+            
             StaticHandler.WriteBatchFile( _outputDir, _fileName, _insertHeader, valueRows, currentBatchCount );
         }
 
         private static class FileSchema
         {
+            public const string FileName = "title.ratings.tsv";
             public enum Indices
             {
                 ImdbId = 0,
                 Rating,
                 NumVotes,
             }
+        }
 
-            public const string FileName = "title.ratings.tsv";
-
-            public const string SqlTableName = "TitleRating";
-
-            public const string ImdbIdColName = "ImdbId";
-            public const string RatingColName = "Rating";
-            public const string NumVotesColName = "NumVotes";
+        private static class SqlSchemaInfo
+        {
+            public const string Table = "TitleRating";
+            public static class ColumnNames
+            {
+                public const string ImdbId = "ImdbId";
+                public const string Rating = "Rating";
+                public const string NumVotes = "NumVotes";
+            }
         }
 
         private class Dto
         {
             public Dto( string dataLine )
             {
-                string[] t = dataLine.Split( Constants.DELIMITER );
+                string[] t = dataLine.Split( DataParsing.DELIMITER );
 
-                ImdbId = t[(int)FileSchema.Indices.ImdbId];
+                ImdbId = t[(int)FileSchema.Indices.ImdbId].ParseImdbId( ImdbIdPrefix.Title );
                 if( decimal.TryParse( t[(int)FileSchema.Indices.Rating], out decimal rating ) ) {
                     Rating = rating;
                 }
@@ -98,10 +106,9 @@ namespace IMDB_DB.Builders
                 }
             }
 
-            public string ImdbId { get; set; }
+            public long ImdbId { get; set; }
             public decimal Rating { get; set; } = 0;
             public int NumVotes { get; set; } = 0;
         }
     }
-
 }

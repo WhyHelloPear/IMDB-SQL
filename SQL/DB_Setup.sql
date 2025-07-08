@@ -5,7 +5,7 @@ CREATE DATABASE IMDB;
 USE IMDB;
 
 CREATE TABLE MediaTitle (
-    ImdbId VARCHAR(12) PRIMARY KEY,
+    ImdbId BIGINT PRIMARY KEY,
     TitleType VARCHAR(32),
     PrimaryTitle VARCHAR(255),
     OriginalTitle VARCHAR(255),
@@ -13,31 +13,33 @@ CREATE TABLE MediaTitle (
     StartYear VARCHAR(4),
     EndYear VARCHAR(4) NULL,
     RuntimeMinutes BIGINT,
-    Genres VARCHAR(255)
+    Genres VARCHAR(255),
+    Original_ImdbId VARCHAR(12) NOT NULL
 );
 
 CREATE TABLE TitleRating (
     RatingId INT AUTO_INCREMENT PRIMARY KEY,
-    ImdbId VARCHAR(12) NOT NULL,
+    ImdbId BIGINT NOT NULL,
     Rating DECIMAL(4,2) UNSIGNED,
     NumVotes BIGINT,
     CONSTRAINT fk_TitleRating_ImdbId FOREIGN KEY (ImdbId) REFERENCES MediaTitle(ImdbId)
 );
 
 CREATE TABLE Person (
-    PersonImdbId VARCHAR(12) PRIMARY KEY,
+    PersonImdbId BIGINT PRIMARY KEY,
     PrimaryName VARCHAR(255),
     BirthYear VARCHAR(4),
     DeathYear VARCHAR(4),
     PrimaryProfession VARCHAR(255),
-    KnownForTitles VARCHAR(255)
+    KnownForTitles VARCHAR(255),
+    Original_PersonImdbId VARCHAR(12) NOT NULL
 );
 
 CREATE TABLE Performance (
     PerformanceId INT AUTO_INCREMENT PRIMARY KEY,
-    ImdbId VARCHAR(12) NOT NULL,
+    ImdbId BIGINT NOT NULL,
+    PersonImdbId BIGINT NOT NULL,
     Ordering INT NOT NULL,
-    PersonImdbId VARCHAR(12) NOT NULL,
     Category VARCHAR(64) NOT NULL,
     Job VARCHAR(255) NULL,
     Characters VARCHAR(255) NULL,
@@ -58,8 +60,8 @@ VALUES
 
 CREATE TABLE TitlePersonPosition (
     TitlePersonPositionId INT AUTO_INCREMENT PRIMARY KEY,
-    ImdbId VARCHAR(12) NOT NULL,
-    PersonImdbId VARCHAR(12) NOT NULL,
+    ImdbId BIGINT NOT NULL,
+    PersonImdbId BIGINT NOT NULL,
     PositionId INT NOT NULL,
     CONSTRAINT uq_TitlePersonPosition UNIQUE (ImdbId, PersonImdbId, PositionId),
     CONSTRAINT fk_TitlePersonPosition_ImdbId FOREIGN KEY (ImdbId) REFERENCES MediaTitle(ImdbId),
@@ -69,7 +71,7 @@ CREATE TABLE TitlePersonPosition (
 
 CREATE TABLE TitleAlias (
     TitleAliasId INT AUTO_INCREMENT PRIMARY KEY,
-    ImdbId VARCHAR(12) NOT NULL,
+    ImdbId BIGINT NOT NULL,
     Ordering INT NOT NULL,
     TitleAlias VARCHAR(255) NOT NULL,
     AliasRegion VARCHAR(56) NULL,
@@ -78,6 +80,16 @@ CREATE TABLE TitleAlias (
     AliasAttributes VARCHAR(255) NULL,
     IsOriginalTitle BOOLEAN NOT NULL,
     CONSTRAINT fk_TitleAlias_ImdbId FOREIGN KEY (ImdbId) REFERENCES MediaTitle(ImdbId)
+);
+
+CREATE TABLE TitleEpisode (
+    TitleEpisodeId INT AUTO_INCREMENT PRIMARY KEY,
+    EpisodeImdbId BIGINT NOT NULL,
+    SeriesImdbId BIGINT NOT NULL,
+    SeasonNumber INT NULL,
+    EpisodeNumber INT NULL,
+    CONSTRAINT fk_TitleEpisode_EpisodeImdbId FOREIGN KEY (EpisodeImdbId) REFERENCES MediaTitle(ImdbId),
+    CONSTRAINT fk_TitleEpisode_SeriesImdbId FOREIGN KEY (SeriesImdbId) REFERENCES MediaTitle(ImdbId)
 );
 
 FLUSH PRIVILEGES;

@@ -1,23 +1,27 @@
 ﻿using System.Text;
+using static IMDB_DB.Constants;
 
 namespace IMDB_DB.Builders
 {
     internal class PersonBuilder : BaseBuilder
     {
+        private string TargetDataFile => $@"{_inputDataBaseDir}\{FileSchema.FileName}";
         public PersonBuilder( string outputDir, string inputDataFile, string fileName ) : base (outputDir, inputDataFile, fileName) {
-            var headerBuilder = new StringBuilder();
-            headerBuilder.AppendLine( "USE IMDB;" );
-            headerBuilder.Append( $"INSERT INTO {FileSchema.SqlTableName} (" );
-            headerBuilder.Append( $"{FileSchema.PersonIdColName}, {FileSchema.PrimaryNameColName}, {FileSchema.BirthYearColName}" );
-            headerBuilder.AppendLine( $", {FileSchema.DeathYearColName}, {FileSchema.PrimaryProfessionColName}, {FileSchema.KnownForTitlesColName} )" );
-            headerBuilder.Append( $"VALUES" );
+            List<string> columnNames = new List<string> {
+                SqlSchemaInfo.ColumnNames.PersonImdbId,
+                SqlSchemaInfo.ColumnNames.PrimaryName,
+                SqlSchemaInfo.ColumnNames.BirthYear,
+                SqlSchemaInfo.ColumnNames.DeathYear,
+                SqlSchemaInfo.ColumnNames.PrimaryProfession,
+                SqlSchemaInfo.ColumnNames.KnownForTitles,
+            };
 
-            _insertHeader = headerBuilder.ToString();
+            _insertHeader = StaticHandler.CreateInsertHeaderRow( SqlSchemaInfo.Table, columnNames );
         }
 
         public override void CreateRatingInsertFiles()
         {
-            using var reader = new StreamReader( _inputDataFile );
+            using var reader = new StreamReader( TargetDataFile );
 
             int batchSize = 1000; // Number of rows per INSERT statement
             var valueBatch = new Dto[batchSize];
@@ -53,24 +57,24 @@ namespace IMDB_DB.Builders
         private void WriteBatchFile( Dto[] values, int currentBatchCount )
         {
             List<string> valueRows = values.Where( v => v != null ).Select( dto => {
-                var rowBuilder = new StringBuilder();
-                rowBuilder.Append( "\t" );
-                rowBuilder.Append( $"( '{dto.PersonId}'" );
-                rowBuilder.Append( $", '{dto.PrimaryName.Truncate( 255 ).Replace( @"\'", "'" ).Replace( @"/'", "'" ).Replace( "'", "''" )}'" );
-                rowBuilder.Append( $", '{dto.BirthYear.Replace( @"\N", "NULL" )}'" );
-                rowBuilder.Append( $", '{dto.DeathYear.Replace( @"\N", "NULL" )}'" );
-                rowBuilder.Append( $", '{dto.PrimaryProfession.Replace( @"\N", "NULL" )}'" );
-                rowBuilder.Append( $", '{dto.KnownForTitles.Replace( @"\N", "NULL" )}' )," );
-                return rowBuilder.ToString();
-            } ).ToList();
+                List<string> values = new List<string> {
+                    dto.PersonId.ToString(),
+                    dto.PrimaryName,
+                    dto.BirthYear,
+                    dto.DeathYear,
+                    dto.PrimaryProfession,
+                    dto.KnownForTitles,
+                };
 
-            valueRows[valueRows.Count - 1] = valueRows.Last().TrimEnd( ',' );
+                return StaticHandler.CreateInsertRowFromValues( values );
+            } ).ToList();
 
             StaticHandler.WriteBatchFile( _outputDir, _fileName, _insertHeader, valueRows, currentBatchCount );
         }
 
         private static class FileSchema
         {
+            public const string FileName = "name.basics.tsv";
             public enum Indices
             {
                 PersonId = 0,
@@ -80,17 +84,20 @@ namespace IMDB_DB.Builders
                 PrimaryProfession,
                 KnownForTitles
             }
+        }
 
-            public const string FileName = "name.basics.tsv";
-
-            public const string SqlTableName = "Person";
-
-            public const string PersonIdColName = "PersonImdbId";
-            public const string PrimaryNameColName = "PrimaryName";
-            public const string BirthYearColName = "BirthYear";
-            public const string DeathYearColName = "DeathYear";
-            public const string PrimaryProfessionColName = "PrimaryProfession";
-            public const string KnownForTitlesColName = "KnownForTitles";
+        private static class SqlSchemaInfo
+        {
+            public const string Table = "Person";
+            public static class ColumnNames
+            {
+                public const string PersonImdbId = "PersonImdbId";
+                public const string PrimaryName = "PrimaryName";
+                public const string BirthYear = "BirthYear";
+                public const string DeathYear = "DeathYear";
+                public const string PrimaryProfession = "PrimaryProfession";
+                public const string KnownForTitles = "KnownForTitles";
+            }
         }
 
         private class Dto
@@ -98,9 +105,9 @@ namespace IMDB_DB.Builders
 
             public Dto( string dataLine )
             {
-                string[] t = dataLine.Split( Constants.DELIMITER );
+                string[] t = dataLine.Split( DataParsing.DELIMITER );
 
-                PersonId = t[(int)FileSchema.Indices.PersonId];
+                PersonId = t[(int)FileSchema.Indices.PersonId].ParseImdbId( ImdbIdPrefix.Person );
                 PrimaryName = t[(int)FileSchema.Indices.PrimaryName];
                 BirthYear = t[(int)FileSchema.Indices.BirthYear];
                 DeathYear = t[(int)FileSchema.Indices.DeathYear];
@@ -108,7 +115,7 @@ namespace IMDB_DB.Builders
                 KnownForTitles = t[(int)FileSchema.Indices.KnownForTitles];
             }
 
-            public string PersonId { get; set; }
+            public long PersonId { get; set; }
             public string PrimaryName { get; set; }
             public string BirthYear { get; set; }
             public string DeathYear { get; set; }

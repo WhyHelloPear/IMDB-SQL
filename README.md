@@ -5,7 +5,7 @@ Download IMDB datasets from here: https://developer.imdb.com/non-commercial-data
 - title.akas.tsv &#9745;
 - title.basics.tsv &#9745;
 - title.crew.tsv &#9745;
-- title.episode.tsv &#x2610;
+- title.episode.tsv &#9745;
 - title.principals.tsv &#9745;
 - title.ratings.tsv &#9745;
 

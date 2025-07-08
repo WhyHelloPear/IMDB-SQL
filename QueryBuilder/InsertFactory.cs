@@ -22,6 +22,7 @@ namespace IMDB_DB
             List<string> personErrors = await InsertPersonPositionSql();
             List<string> aliasErrors = await InsertAliasSql();
             List<string> ratingErrors = await InsertRatingsSql();
+            List<string> episodeErrors = await InsertEpisodesSql();
 
             return [ 
                 .. titleErrors,
@@ -30,6 +31,7 @@ namespace IMDB_DB
                 .. personErrors,
                 .. aliasErrors,
                 .. ratingErrors,
+                .. episodeErrors,
             ];
         }
 
@@ -79,6 +81,14 @@ namespace IMDB_DB
             await connection.OpenAsync();
 
             return await InsertScriptsFromDir( @$"{_baseOutputDir}\persons", connection );
+        }
+        
+        public async Task<List<string>> InsertEpisodesSql()
+        {
+            await using var connection = new MySqlConnection( _connectionString );
+            await connection.OpenAsync();
+
+            return await InsertScriptsFromDir( @$"{_baseOutputDir}\episodes", connection );
         }
 
         static async Task<List<string>> InsertScriptsFromDir( string outputDir, MySqlConnection connection )

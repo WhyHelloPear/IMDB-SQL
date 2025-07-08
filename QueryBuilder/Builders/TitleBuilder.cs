@@ -1,24 +1,31 @@
-﻿using System.Text;
+﻿using System.Linq;
+using System.Text;
+using static IMDB_DB.Constants;
 
 namespace IMDB_DB.Builders
 {
     internal class TitleBuilder : BaseBuilder
     {
+        private string TargetDataFile => $@"{_inputDataBaseDir}\{FileSchema.FileName}";
         public TitleBuilder( string outputDir, string inputDataFile, string fileName ) : base (outputDir, inputDataFile, fileName) {
-            var headerBuilder = new StringBuilder();
-            headerBuilder.AppendLine( "USE IMDB;" );
-            headerBuilder.Append( $"INSERT INTO {FileSchema.SqlTableName} (" );
-            headerBuilder.Append( $"{FileSchema.ImdbIdColName}, {FileSchema.TitleTypeColName}, {FileSchema.PrimaryTitleColName}" );
-            headerBuilder.Append( $", {FileSchema.OriginalTitleColName}, {FileSchema.IsAdultColName}, {FileSchema.StartYearColName}" );
-            headerBuilder.AppendLine( $", {FileSchema.EndYearColName}, {FileSchema.RuntimeMinutesColName}, {FileSchema.GenresColName} )" );
-            headerBuilder.Append( $"VALUES" );
+            List<string> columnNames = new List<string> {
+                SqlSchemaInfo.ColumnNames.ImdbId,
+                SqlSchemaInfo.ColumnNames.TitleType,
+                SqlSchemaInfo.ColumnNames.PrimaryTitle,
+                SqlSchemaInfo.ColumnNames.OriginalTitle,
+                SqlSchemaInfo.ColumnNames.IsAdult,
+                SqlSchemaInfo.ColumnNames.StartYear,
+                SqlSchemaInfo.ColumnNames.EndYear,
+                SqlSchemaInfo.ColumnNames.RuntimeMinutes,
+                SqlSchemaInfo.ColumnNames.Genres,
+            };
 
-            _insertHeader = headerBuilder.ToString();
+            _insertHeader = StaticHandler.CreateInsertHeaderRow( SqlSchemaInfo.Table, columnNames );
         }
 
         public override void CreateRatingInsertFiles()
         {
-            using var reader = new StreamReader( _inputDataFile );
+            using var reader = new StreamReader( TargetDataFile );
 
             int batchSize = 1000; // Number of rows per INSERT statement
             var valueBatch = new Dto[batchSize];
@@ -54,27 +61,27 @@ namespace IMDB_DB.Builders
         private void WriteBatchFile( Dto[] values, int currentBatchCount )
         {
             List<string> valueRows = values.Where( v => v != null ).Select( dto => {
-                var rowBuilder = new StringBuilder();
-                rowBuilder.Append( "\t" );
-                rowBuilder.Append( $"( '{dto.ImdbId}'" );
-                rowBuilder.Append( $", '{dto.MediaType}'" );
-                rowBuilder.Append( $", '{dto.PrimaryTitle.Truncate( 255 ).Replace( @"\'", "'" ).Replace( @"/'", "'" ).Replace( "'", "''" )}'" );
-                rowBuilder.Append( $", '{dto.OriginalTitle.Truncate( 255 ).Replace( @"\'", "'" ).Replace( @"/'", "'" ).Replace( "'", "''" )}'" );
-                rowBuilder.Append( $", '{( dto.IsAdult ? 1 : 0 )}'" );
-                rowBuilder.Append( $", '{dto.StartYear}'" );
-                rowBuilder.Append( $", '{dto.EndYear.Replace( @"\N", "NULL" )}'" );
-                rowBuilder.Append( $", '{dto.RuntimeMinutes}'" );
-                rowBuilder.Append( $", '{dto.Genres.Truncate( 255 )}' )," );
-                return rowBuilder.ToString();
-            } ).ToList();
+                List<string> values = new List<string> {
+                    dto.ImdbId.ToString(),
+                    dto.MediaType,
+                    dto.PrimaryTitle,
+                    dto.OriginalTitle,
+                    dto.IsAdult ? "1" : "0",
+                    dto.StartYear,
+                    dto.EndYear,
+                    dto.RuntimeMinutes.ToString(),
+                    dto.Genres,
+                };
 
-            valueRows[valueRows.Count - 1] = valueRows.Last().TrimEnd( ',' );
+                return StaticHandler.CreateInsertRowFromValues( values );
+            } ).ToList();
 
             StaticHandler.WriteBatchFile( _outputDir, _fileName, _insertHeader, valueRows, currentBatchCount );
         }
 
         private static class FileSchema
         {
+            public const string FileName = "title.basics.tsv";
             public enum Indices
             {
                 ImdbId = 0,
@@ -87,30 +94,32 @@ namespace IMDB_DB.Builders
                 RuntimeMinutes,
                 Genres,
             }
+        }
 
-            public const string FileName = "title.basics.tsv";
-
-            public const string SqlTableName = "MediaTitle";
-
-            public const string ImdbIdColName = "ImdbId";
-            public const string TitleTypeColName = "TitleType";
-            public const string PrimaryTitleColName = "PrimaryTitle";
-            public const string OriginalTitleColName = "OriginalTitle";
-            public const string IsAdultColName = "IsAdult";
-            public const string StartYearColName = "StartYear";
-            public const string EndYearColName = "EndYear";
-            public const string RuntimeMinutesColName = "RuntimeMinutes";
-            public const string GenresColName = "Genres";
+        private static class SqlSchemaInfo
+        {
+            public const string Table = "MediaTitle";
+            public static class ColumnNames
+            {
+                public const string ImdbId = "ImdbId";
+                public const string TitleType = "TitleType";
+                public const string PrimaryTitle = "PrimaryTitle";
+                public const string OriginalTitle = "OriginalTitle";
+                public const string IsAdult = "IsAdult";
+                public const string StartYear = "StartYear";
+                public const string EndYear = "EndYear";
+                public const string RuntimeMinutes = "RuntimeMinutes";
+                public const string Genres = "Genres";
+            }
         }
 
         private class Dto
         {
-
             public Dto( string dataLine )
             {
-                string[] t = dataLine.Split( Constants.DELIMITER );
+                string[] t = dataLine.Split( DataParsing.DELIMITER );
 
-                ImdbId = t[(int)FileSchema.Indices.ImdbId];
+                ImdbId = t[(int)FileSchema.Indices.ImdbId].ParseImdbId( ImdbIdPrefix.Title );
                 MediaType = t[(int)FileSchema.Indices.Type];
                 PrimaryTitle = t[(int)FileSchema.Indices.PrimaryTitle];
                 OriginalTitle = t[(int)FileSchema.Indices.OriginalTitle];
@@ -127,7 +136,7 @@ namespace IMDB_DB.Builders
                 }
             }
 
-            public string ImdbId { get; set; }
+            public long ImdbId { get; set; }
             public string MediaType { get; set; }
             public string PrimaryTitle { get; set; }
             public string OriginalTitle { get; set; }
