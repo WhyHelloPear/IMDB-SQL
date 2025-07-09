@@ -18,12 +18,15 @@ string baseDataDir = @"E:\MovieLibrary\imdb_sql\data";
 bool isExitInput = false;
 while( !isExitInput ) {
     var userMenuBuilder = new StringBuilder();
-    userMenuBuilder.AppendLine( "Choose an option:" );
+    userMenuBuilder.AppendLine( "=============================" );
+    userMenuBuilder.AppendLine( "==========Main Menu==========" );
+    userMenuBuilder.AppendLine( "=============================" );
+    userMenuBuilder.AppendLine( "Choose an option:\n" );
     userMenuBuilder.AppendLine( "1. Create INSERT SQL scripts" );
     userMenuBuilder.AppendLine( "2. Insert SQL scripts" );
     userMenuBuilder.AppendLine( "3. Get Unique Values" );
     userMenuBuilder.AppendLine( "0. Exit" );
-    userMenuBuilder.AppendLine( "=============================" );
+    userMenuBuilder.AppendLine( "\n=============================\n" );
     Console.WriteLine( userMenuBuilder.ToString() );
 
     var input = Console.ReadLine();
@@ -49,16 +52,17 @@ while( !isExitInput ) {
 
 async Task HandleUniqueValueChoice()
 {
-    var factory = new UniquePerformance( baseDataDir, $@"{outputDir}\info" );
-
     bool isExitInput = false;
     while( !isExitInput ) {
         var userMenuBuilder = new StringBuilder();
-        userMenuBuilder.AppendLine( "\n=============================" );
-        userMenuBuilder.AppendLine( "Choose an option:" );
-        userMenuBuilder.AppendLine( "1. Professions" );
-        userMenuBuilder.AppendLine( "0. Back" );
         userMenuBuilder.AppendLine( "=============================" );
+        userMenuBuilder.AppendLine( "======Unique Value Menu======" );
+        userMenuBuilder.AppendLine( "=============================" );
+        userMenuBuilder.AppendLine( "Choose an option:\n" );
+        userMenuBuilder.AppendLine( "1. Professions" );
+        userMenuBuilder.AppendLine( "2. Genres" );
+        userMenuBuilder.AppendLine( "0. Back" );
+        userMenuBuilder.AppendLine( "\n=============================\n" );
         Console.WriteLine( userMenuBuilder.ToString() );
 
         var input = Console.ReadLine();
@@ -67,7 +71,12 @@ async Task HandleUniqueValueChoice()
                 isExitInput = true;
                 break;
             case "1":
-                factory.DoStuff();
+                var performance = new UniquePerformance( baseDataDir, $@"{outputDir}\info" );
+                performance.FindUniqueProfessions();
+                break;
+            case "2":
+                var genres = new UniqueGenres( baseDataDir, $@"{outputDir}\info" );
+                genres.FindUniqueGenres();
                 break;
             default:
                 Console.WriteLine( "Invalid option.\n\n" );
@@ -83,8 +92,10 @@ void HandlePrepareScriptsChoice()
     bool isExitInput = false;
     while( !isExitInput ) {
         var userMenuBuilder = new StringBuilder();
-        userMenuBuilder.AppendLine( "\n=============================" );
-        userMenuBuilder.AppendLine( "Choose an option:" );
+        userMenuBuilder.AppendLine( "=============================" );
+        userMenuBuilder.AppendLine( "======Prepare SQL Menu=======" );
+        userMenuBuilder.AppendLine( "=============================" );
+        userMenuBuilder.AppendLine( "Choose an option:\n" );
         userMenuBuilder.AppendLine( "1. All" );
         userMenuBuilder.AppendLine( "2. Titles" );
         userMenuBuilder.AppendLine( "3. Persons" );
@@ -93,8 +104,9 @@ void HandlePrepareScriptsChoice()
         userMenuBuilder.AppendLine( "6. Title Alias" );
         userMenuBuilder.AppendLine( "7. Title Ratings" );
         userMenuBuilder.AppendLine( "8. Episodes" );
+        userMenuBuilder.AppendLine( "9. Genre Links" );
         userMenuBuilder.AppendLine( "0. Back" );
-        userMenuBuilder.AppendLine( "=============================" );
+        userMenuBuilder.AppendLine( "\n=============================\n" );
         Console.WriteLine( userMenuBuilder.ToString() );
 
         var input = Console.ReadLine();
@@ -126,6 +138,9 @@ void HandlePrepareScriptsChoice()
             case "8": //episodes
                 factory.BuildEpisodesSql();
                 break;
+            case "9": //genre links
+                factory.BuildGenreLinksSql();
+                break;
             default:
                 Console.WriteLine( "Invalid option.\n\n" );
                 break;
@@ -140,8 +155,10 @@ async Task HandleInsertScriptsChoice()
     bool isExitInput = false;
     while( !isExitInput ) {
         var userMenuBuilder = new StringBuilder();
-        userMenuBuilder.AppendLine( "\n=============================" );
-        userMenuBuilder.AppendLine( "Choose an option:" );
+        userMenuBuilder.AppendLine( "=============================" );
+        userMenuBuilder.AppendLine( "=======Insert SQL Menu=======" );
+        userMenuBuilder.AppendLine( "=============================" );
+        userMenuBuilder.AppendLine( "Choose an option:\n" );
         userMenuBuilder.AppendLine( "1. All" );
         userMenuBuilder.AppendLine( "2. Titles" );
         userMenuBuilder.AppendLine( "3. Persons" );
@@ -150,8 +167,9 @@ async Task HandleInsertScriptsChoice()
         userMenuBuilder.AppendLine( "6. Title Alias" );
         userMenuBuilder.AppendLine( "7. Title Ratings" );
         userMenuBuilder.AppendLine( "8. Episodes" );
+        userMenuBuilder.AppendLine( "9. Genre Links" );
         userMenuBuilder.AppendLine( "0. Back" );
-        userMenuBuilder.AppendLine( "=============================" );
+        userMenuBuilder.AppendLine( "\n=============================\n" );
         Console.WriteLine( userMenuBuilder.ToString() );
 
         var errors = new List<string>();
@@ -191,6 +209,10 @@ async Task HandleInsertScriptsChoice()
                 break;
             case "8": //episodes
                 errors = await factory.InsertEpisodesSql();
+                WriteErrorsToConsole( errors );
+                break;
+            case "9": //genre links
+                errors = await factory.InsertGenreLinksSql();
                 WriteErrorsToConsole( errors );
                 break;
             default:

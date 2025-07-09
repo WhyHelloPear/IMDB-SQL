@@ -1,4 +1,5 @@
 ﻿using static IMDB_DB.Constants;
+using static IMDB_DB.FileColumnIndices;
 
 namespace IMDB_DB.Builders
 {
@@ -17,7 +18,6 @@ namespace IMDB_DB.Builders
                 SqlSchemaInfo.ColumnNames.StartYear,
                 SqlSchemaInfo.ColumnNames.EndYear,
                 SqlSchemaInfo.ColumnNames.RuntimeMinutes,
-                SqlSchemaInfo.ColumnNames.Genres,
             };
 
             _insertHeader = StaticHandler.CreateInsertHeaderRow( SqlSchemaInfo.Table, columnNames );
@@ -71,7 +71,6 @@ namespace IMDB_DB.Builders
                     dto.StartYear,
                     dto.EndYear,
                     dto.RuntimeMinutes.ToString(),
-                    dto.Genres,
                 };
 
                 return StaticHandler.CreateInsertRowFromValues( values );
@@ -85,15 +84,14 @@ namespace IMDB_DB.Builders
             public const string FileName = "title.basics.tsv";
             public enum Indices
             {
-                ImdbId = 0,
-                Type,
-                PrimaryTitle,
-                OriginalTitle,
-                IsAdult,
-                StartYear,
-                EndYear,
-                RuntimeMinutes,
-                Genres,
+                ImdbId = TitleBasicsIndices.ImdbId,
+                Type = TitleBasicsIndices.Type,
+                PrimaryTitle = TitleBasicsIndices.PrimaryTitle,
+                OriginalTitle = TitleBasicsIndices.OriginalTitle,
+                IsAdult = TitleBasicsIndices.IsAdult,
+                StartYear = TitleBasicsIndices.StartYear,
+                EndYear = TitleBasicsIndices.EndYear,
+                RuntimeMinutes = TitleBasicsIndices.RuntimeMinutes,
             }
         }
 
@@ -110,7 +108,6 @@ namespace IMDB_DB.Builders
                 public const string StartYear = "StartYear";
                 public const string EndYear = "EndYear";
                 public const string RuntimeMinutes = "RuntimeMinutes";
-                public const string Genres = "Genres";
                 public const string Original_ImdbId = "Original_ImdbId";
             }
         }
@@ -129,7 +126,6 @@ namespace IMDB_DB.Builders
                 OriginalTitle = t[(int)FileSchema.Indices.OriginalTitle];
                 StartYear = t[(int)FileSchema.Indices.StartYear];
                 EndYear = t[(int)FileSchema.Indices.EndYear];
-                Genres = t[(int)FileSchema.Indices.Genres];
 
                 if( bool.TryParse( t[(int)FileSchema.Indices.IsAdult], out bool isAdult ) ) {
                     IsAdult = isAdult;
@@ -148,7 +144,6 @@ namespace IMDB_DB.Builders
             public string StartYear { get; set; }
             public string EndYear { get; set; }
             public int RuntimeMinutes { get; set; }
-            public string Genres { get; set; }
             public string Original_ImdbId { get; set; }
         }
     }

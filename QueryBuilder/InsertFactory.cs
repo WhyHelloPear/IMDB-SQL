@@ -90,6 +90,14 @@ namespace IMDB_DB
 
             return await InsertScriptsFromDir( @$"{_baseOutputDir}\episodes", connection );
         }
+        
+        public async Task<List<string>> InsertGenreLinksSql()
+        {
+            await using var connection = new MySqlConnection( _connectionString );
+            await connection.OpenAsync();
+
+            return await InsertScriptsFromDir( @$"{_baseOutputDir}\genreLinks", connection );
+        }
 
         static async Task<List<string>> InsertScriptsFromDir( string outputDir, MySqlConnection connection )
         {

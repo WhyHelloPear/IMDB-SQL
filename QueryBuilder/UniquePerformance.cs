@@ -23,7 +23,7 @@ namespace IMDB_DB
             Directory.CreateDirectory( _baseOutputDir );
         }
 
-        public void DoStuff()
+        public void FindUniqueProfessions()
         {
             if( File.Exists( ProfessionOutputPath ) ) {
                 File.Delete( ProfessionOutputPath );

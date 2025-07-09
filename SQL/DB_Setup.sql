@@ -4,6 +4,43 @@ GRANT ALL PRIVILEGES ON *.* TO 'imdb_admin'@'%' WITH GRANT OPTION;
 CREATE DATABASE IMDB;
 USE IMDB;
 
+CREATE TABLE TitleGenre (
+    TitleGenreId INT NOT NULL PRIMARY KEY,
+    GenreName VARCHAR(24) NOT NULL,
+    CONSTRAINT uq_TitleGenre UNIQUE (GenreName)
+);
+
+INSERT INTO TitleGenre (TitleGenreId, GenreName) 
+VALUES
+    (1, 'Documentary'),
+    (2, 'Short'),
+    (3, 'Animation'),
+    (4, 'Comedy'),
+    (5, 'Romance'),
+    (6, 'Sport'),
+    (7, 'News'),
+    (8, 'Drama'),
+    (9, 'Fantasy'),
+    (10, 'Horror'),
+    (11, 'Biography'),
+    (12, 'Music'),
+    (13, 'War'),
+    (14, 'Crime'),
+    (15, 'Western'),
+    (16, 'Family'),
+    (17, 'Adventure'),
+    (18, 'Action'),
+    (19, 'History'),
+    (20, 'Mystery'),
+    (21, 'Sci-Fi'),
+    (22, 'Musical'),
+    (23, 'Thriller'),
+    (24, 'Film-Noir'),
+    (25, 'Talk-Show'),
+    (26, 'Game-Show'),
+    (27, 'Reality-TV'),
+    (28, 'Adult');
+
 CREATE TABLE MediaTitle (
     ImdbId BIGINT PRIMARY KEY,
     TitleType VARCHAR(32),
@@ -13,8 +50,15 @@ CREATE TABLE MediaTitle (
     StartYear VARCHAR(4),
     EndYear VARCHAR(4) NULL,
     RuntimeMinutes BIGINT,
-    Genres VARCHAR(255),
     Original_ImdbId VARCHAR(12) NOT NULL
+);
+
+CREATE TABLE TitleGenreLink (
+    TitleGenreLinkId INT AUTO_INCREMENT PRIMARY KEY,
+    ImdbId BIGINT NOT NULL,
+    TitleGenreId INT NOT NULL,
+    CONSTRAINT fk_TitleGenreLink_ImdbId FOREIGN KEY (ImdbId) REFERENCES MediaTitle(ImdbId),
+    CONSTRAINT fk_TitleGenreLink_TitleGenreId FOREIGN KEY (TitleGenreId) REFERENCES TitleGenre(TitleGenreId)
 );
 
 CREATE TABLE TitleRating (
@@ -41,18 +85,6 @@ CREATE TABLE TitlePosition (
     CONSTRAINT uq_TitlePosition UNIQUE (PositionName)
 );
 
-CREATE TABLE Performance (
-    PerformanceId INT AUTO_INCREMENT PRIMARY KEY,
-    ImdbId BIGINT NOT NULL,
-    PersonImdbId BIGINT NOT NULL,
-    PositionId INT NOT NULL,
-    Ordering INT NOT NULL,
-    PerformanceDescription VARCHAR(255) NULL,
-    CONSTRAINT fk_Performance_ImdbId FOREIGN KEY (ImdbId) REFERENCES MediaTitle(ImdbId),
-    CONSTRAINT fk_Performance_PersonImdbId FOREIGN KEY (PersonImdbId) REFERENCES Person(PersonImdbId),
-    CONSTRAINT fk_Performance_PositionId FOREIGN KEY (PositionId) REFERENCES TitlePosition(PositionId)
-);
-
 INSERT INTO TitlePosition (PositionId, PositionName)
 VALUES
     (1, 'Director'),
@@ -66,6 +98,18 @@ VALUES
     (9, 'Featured Subject'),
     (10, 'Casting Director'),
     (11, 'Voice');
+
+CREATE TABLE Performance (
+    PerformanceId INT AUTO_INCREMENT PRIMARY KEY,
+    ImdbId BIGINT NOT NULL,
+    PersonImdbId BIGINT NOT NULL,
+    PositionId INT NOT NULL,
+    Ordering INT NOT NULL,
+    PerformanceDescription VARCHAR(255) NULL,
+    CONSTRAINT fk_Performance_ImdbId FOREIGN KEY (ImdbId) REFERENCES MediaTitle(ImdbId),
+    CONSTRAINT fk_Performance_PersonImdbId FOREIGN KEY (PersonImdbId) REFERENCES Person(PersonImdbId),
+    CONSTRAINT fk_Performance_PositionId FOREIGN KEY (PositionId) REFERENCES TitlePosition(PositionId)
+);
 
 CREATE TABLE TitlePersonPosition (
     TitlePersonPositionId INT AUTO_INCREMENT PRIMARY KEY,

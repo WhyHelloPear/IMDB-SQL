@@ -65,5 +65,11 @@ namespace IMDB_DB
             var episodeBuilder = new EpisodeBuilder( @$"{_baseOutputDir}\episodes", _baseDataInputDir, "episodes_data_insert" );
             episodeBuilder.CreateRatingInsertFiles();
         }
+        
+        public void BuildGenreLinksSql()
+        {
+            var episodeBuilder = new TitleGenreBuilder( @$"{_baseOutputDir}\genreLinks", _baseDataInputDir, "genreLinks_data_insert" );
+            episodeBuilder.CreateRatingInsertFiles();
+        }
     }
 }
