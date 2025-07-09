@@ -14,7 +14,6 @@ namespace IMDB_DB.Builders
                 SqlSchemaInfo.ColumnNames.BirthYear,
                 SqlSchemaInfo.ColumnNames.DeathYear,
                 SqlSchemaInfo.ColumnNames.PrimaryProfession,
-                SqlSchemaInfo.ColumnNames.KnownForTitles,
             };
 
             _insertHeader = StaticHandler.CreateInsertHeaderRow( SqlSchemaInfo.Table, columnNames );
@@ -65,7 +64,6 @@ namespace IMDB_DB.Builders
                     dto.BirthYear,
                     dto.DeathYear,
                     dto.PrimaryProfession,
-                    dto.KnownForTitles,
                 };
 
                 return StaticHandler.CreateInsertRowFromValues( values );
@@ -98,7 +96,6 @@ namespace IMDB_DB.Builders
                 public const string BirthYear = "BirthYear";
                 public const string DeathYear = "DeathYear";
                 public const string PrimaryProfession = "PrimaryProfession";
-                public const string KnownForTitles = "KnownForTitles";
                 public const string Original_PersonImdbId = "Original_PersonImdbId";
             }
         }
@@ -117,7 +114,6 @@ namespace IMDB_DB.Builders
                 BirthYear = t[(int)FileSchema.Indices.BirthYear];
                 DeathYear = t[(int)FileSchema.Indices.DeathYear];
                 PrimaryProfession = t[(int)FileSchema.Indices.PrimaryProfession];
-                KnownForTitles = t[(int)FileSchema.Indices.KnownForTitles];
             }
 
             public long PersonId { get; set; }
@@ -125,7 +121,6 @@ namespace IMDB_DB.Builders
             public string BirthYear { get; set; }
             public string DeathYear { get; set; }
             public string PrimaryProfession { get; set; }
-            public string KnownForTitles { get; set; }
             public string Original_PersonId { get; set; }
         }
     }

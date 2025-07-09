@@ -102,15 +102,15 @@ void HandlePrepareScriptsChoice()
         userMenuBuilder.AppendLine( "======Prepare SQL Menu=======" );
         userMenuBuilder.AppendLine( "=============================" );
         userMenuBuilder.AppendLine( "Choose an option:\n" );
-        userMenuBuilder.AppendLine( "1. All" );
-        userMenuBuilder.AppendLine( "2. Titles" );
-        userMenuBuilder.AppendLine( "3. Persons" );
-        userMenuBuilder.AppendLine( "4. Performance" );
-        userMenuBuilder.AppendLine( "5. PersonPosition (director/writer)" );
-        userMenuBuilder.AppendLine( "6. Title Alias" );
-        userMenuBuilder.AppendLine( "7. Title Ratings" );
-        userMenuBuilder.AppendLine( "8. Episodes" );
-        userMenuBuilder.AppendLine( "9. Genre Links" );
+        userMenuBuilder.AppendLine( "1. Titles" );
+        userMenuBuilder.AppendLine( "2. Persons" );
+        userMenuBuilder.AppendLine( "3. Performance" );
+        userMenuBuilder.AppendLine( "4. PersonPosition (director/writer)" );
+        userMenuBuilder.AppendLine( "5. Title Alias" );
+        userMenuBuilder.AppendLine( "6. Title Ratings" );
+        userMenuBuilder.AppendLine( "7. Episodes" );
+        userMenuBuilder.AppendLine( "8. Genre Links" );
+        userMenuBuilder.AppendLine( "9. Known for Titles" );
         userMenuBuilder.AppendLine( "0. Back" );
         userMenuBuilder.AppendLine( "\n=============================\n" );
         Console.WriteLine( userMenuBuilder.ToString() );
@@ -121,31 +121,31 @@ void HandlePrepareScriptsChoice()
                 isExitInput = true;
                 break;
             case "1":
-                factory.BuildAll();
-                break;
-            case "2": //titles
                 factory.BuildTitlesSql();
                 break;
-            case "3": //persons
+            case "2":
                 factory.BuildPersonsSql();
                 break;
-            case "4": //performances
+            case "3":
                 factory.BuildPerformancesSql();
                 break;
-            case "5": //person positions
+            case "4":
                 factory.BuildPersonPositionSql();
                 break;
-            case "6": //aliases
+            case "5":
                 factory.BuildAliasSql();
                 break;
-            case "7": //ratings
+            case "6":
                 factory.BuildRatingsSql();
                 break;
-            case "8": //episodes
+            case "7":
                 factory.BuildEpisodesSql();
                 break;
-            case "9": //genre links
+            case "8":
                 factory.BuildGenreLinksSql();
+                break;
+            case "9":
+                factory.BuildKnownForTitlesSql();
                 break;
             default:
                 Console.WriteLine( "Invalid option.\n\n" );
@@ -165,15 +165,15 @@ async Task HandleInsertScriptsChoice()
         userMenuBuilder.AppendLine( "=======Insert SQL Menu=======" );
         userMenuBuilder.AppendLine( "=============================" );
         userMenuBuilder.AppendLine( "Choose an option:\n" );
-        userMenuBuilder.AppendLine( "1. All" );
-        userMenuBuilder.AppendLine( "2. Titles" );
-        userMenuBuilder.AppendLine( "3. Persons" );
-        userMenuBuilder.AppendLine( "4. Performance" );
-        userMenuBuilder.AppendLine( "5. PersonPosition (director/writer)" );
-        userMenuBuilder.AppendLine( "6. Title Alias" );
-        userMenuBuilder.AppendLine( "7. Title Ratings" );
-        userMenuBuilder.AppendLine( "8. Episodes" );
-        userMenuBuilder.AppendLine( "9. Genre Links" );
+        userMenuBuilder.AppendLine( "1. Titles" );
+        userMenuBuilder.AppendLine( "2. Persons" );
+        userMenuBuilder.AppendLine( "3. Performance" );
+        userMenuBuilder.AppendLine( "4. PersonPosition (director/writer)" );
+        userMenuBuilder.AppendLine( "5. Title Alias" );
+        userMenuBuilder.AppendLine( "6. Title Ratings" );
+        userMenuBuilder.AppendLine( "7. Episodes" );
+        userMenuBuilder.AppendLine( "8. Genre Links" );
+        userMenuBuilder.AppendLine( "9. Known for Titles" );
         userMenuBuilder.AppendLine( "0. Back" );
         userMenuBuilder.AppendLine( "\n=============================\n" );
         Console.WriteLine( userMenuBuilder.ToString() );
@@ -186,39 +186,39 @@ async Task HandleInsertScriptsChoice()
                 isExitInput = true;
                 break;
             case "1":
-                errors = await factory.InsertAll();
-                WriteErrorsToConsole( errors );
-                break;
-            case "2": //titles
                 errors = await factory.InsertTitlesSql();
                 WriteErrorsToConsole( errors );
                 break;
-            case "3": //persons
+            case "2":
                 errors = await factory.InsertPersonsSql();
                 WriteErrorsToConsole( errors );
                 break;
-            case "4": //performances
+            case "3":
                 errors = await factory.InsertPerformancesSql();
                 WriteErrorsToConsole( errors );
                 break;
-            case "5": //person positions
+            case "4":
                 errors = await factory.InsertPersonPositionSql();
                 WriteErrorsToConsole( errors );
                 break;
-            case "6": //aliases
+            case "5":
                 errors = await factory.InsertAliasSql();
                 WriteErrorsToConsole( errors );
                 break;
-            case "7": //ratings
+            case "6":
                 errors = await factory.InsertRatingsSql();
                 WriteErrorsToConsole( errors );
                 break;
-            case "8": //episodes
+            case "7":
                 errors = await factory.InsertEpisodesSql();
                 WriteErrorsToConsole( errors );
                 break;
-            case "9": //genre links
+            case "8":
                 errors = await factory.InsertGenreLinksSql();
+                WriteErrorsToConsole( errors );
+                break;
+            case "9": 
+                errors = await factory.InsertKnownForTitlesSql();
                 WriteErrorsToConsole( errors );
                 break;
             default:

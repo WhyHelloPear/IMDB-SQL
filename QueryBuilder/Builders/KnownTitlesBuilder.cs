@@ -1,46 +1,16 @@
 ﻿using static IMDB_DB.Constants;
+using static IMDB_DB.FileColumnIndices;
 
 namespace IMDB_DB.Builders
 {
-    internal class TitleGenreBuilder : BaseBuilder
+    internal class KnownTitlesBuilder : BaseBuilder
     {
-        private Dictionary<string, int> GenreMappings = new Dictionary<string, int>{
-            { "documentary", (int)TitleGenres.Documentary },
-            { "short", (int)TitleGenres.Short },
-            { "animation", (int)TitleGenres.Animation },
-            { "comedy", (int)TitleGenres.Comedy },
-            { "romance", (int)TitleGenres.Romance },
-            { "sport", (int)TitleGenres.Sport },
-            { "news", (int)TitleGenres.News },
-            { "drama", (int)TitleGenres.Drama },
-            { "fantasy", (int)TitleGenres.Fantasy },
-            { "horror", (int)TitleGenres.Horror },
-            { "biography", (int)TitleGenres.Biography },
-            { "music", (int)TitleGenres.Music },
-            { "war", (int)TitleGenres.War },
-            { "crime", (int)TitleGenres.Crime },
-            { "western", (int)TitleGenres.Western },
-            { "family", (int)TitleGenres.Family },
-            { "adventure", (int)TitleGenres.Adventure },
-            { "action", (int)TitleGenres.Action },
-            { "history", (int)TitleGenres.History },
-            { "mystery", (int)TitleGenres.Mystery },
-            { "sci-fi", (int)TitleGenres.SciFi },
-            { "musical", (int)TitleGenres.Musical },
-            { "thriller", (int)TitleGenres.Thriller },
-            { "film-noir", (int)TitleGenres.FilmNoir },
-            { "talk-show", (int)TitleGenres.TalkShow },
-            { "game-show", (int)TitleGenres.GameShow },
-            { "reality-tv", (int)TitleGenres.RealityTV },
-            { "adult", (int)TitleGenres.Adult }
-        };
-
         private string TargetDataFile => $@"{_inputDataBaseDir}\{FileSchema.FileName}";
-        public TitleGenreBuilder( string outputDir, string inputDataFile, string fileName ) : base( outputDir, inputDataFile, fileName )
+        public KnownTitlesBuilder( string outputDir, string inputDataFile, string fileName ) : base( outputDir, inputDataFile, fileName )
         {
             List<string> columnNames = new List<string> {
+                SqlSchemaInfo.ColumnNames.PersonImdbId,
                 SqlSchemaInfo.ColumnNames.ImdbId,
-                SqlSchemaInfo.ColumnNames.TitleGenreId,
             };
 
             _insertHeader = StaticHandler.CreateInsertHeaderRow( SqlSchemaInfo.Table, columnNames );
@@ -64,7 +34,7 @@ namespace IMDB_DB.Builders
                 }
 
                 var originalLineDto = new Dto( line );
-                List<Dto> splitDtos = originalLineDto.SplitDtoByGenre( GenreMappings );
+                List<Dto> splitDtos = originalLineDto.SplitDtoByGenre();
                 if( !splitDtos.Any() ) {
                     continue;
                 }
@@ -93,8 +63,8 @@ namespace IMDB_DB.Builders
         {
             List<string> valueRows = values.Where( v => v != null ).Select( dto => {
                 List<string> values = new List<string> {
+                    dto.PersonId.ToString(),
                     dto.ImdbId.ToString(),
-                    dto.TitleGenreId.ToString(),
                 };
 
                 return StaticHandler.CreateInsertRowFromValues( values );
@@ -105,21 +75,21 @@ namespace IMDB_DB.Builders
 
         private static class FileSchema
         {
-            public const string FileName = "title.basics.tsv";
+            public const string FileName = "name.basics.tsv";
             public enum Indices
             {
-                ImdbId = 0,
-                Genres = 8,
+                PersonId = PersonIndices.PersonId,
+                KnownForTitles = PersonIndices.KnownForTitles,
             }
         }
 
         private static class SqlSchemaInfo
         {
-            public const string Table = "TitleGenreLink";
+            public const string Table = "PersonKnownForTitles";
             public static class ColumnNames
             {
+                public const string PersonImdbId = "PersonImdbId";
                 public const string ImdbId = "ImdbId";
-                public const string TitleGenreId = "TitleGenreId";
             }
         }
 
@@ -129,28 +99,27 @@ namespace IMDB_DB.Builders
             {
                 string[] t = dataLine.Split( DataParsing.DELIMITER );
 
-                ImdbId = t[(int)FileSchema.Indices.ImdbId].ParseImdbId( ImdbIdPrefix.Title );
-                string genreValues = t[(int)FileSchema.Indices.Genres].CleanSqlValue();
+                PersonId = t[(int)FileSchema.Indices.PersonId].ParseImdbId( ImdbIdPrefix.Person );
+                string knownForTitles = t[(int)FileSchema.Indices.KnownForTitles].CleanSqlValue();
 
-                RelatedGenres = genreValues == "NULL" ? new List<string>() : genreValues.Split( ',' ).ToList();
+                KnowForTitleIds = ( knownForTitles == "NULL" || string.IsNullOrEmpty( knownForTitles ) ) ? new List<string>() : knownForTitles.Split( ',' ).ToList();
             }
 
-            public Dto( long imdbId, int genreId )
+            public Dto( long personId, long imdbId )
             {
+                PersonId = personId;
                 ImdbId = imdbId;
-                TitleGenreId = genreId;
             }
 
+            public long PersonId { get; set; }
             public long ImdbId { get; set; }
-            public int TitleGenreId { get; set; }
-            public List<string> RelatedGenres { get; set; }
+            public List<string> KnowForTitleIds { get; set; }
 
-            public List<Dto> SplitDtoByGenre( Dictionary<string, int> mapper )
+            public List<Dto> SplitDtoByGenre()
             {
                 var result = new List<Dto>();
-                foreach( var genre in RelatedGenres ) {
-                    int genreId = mapper[genre.ToLower()];
-                    result.Add( new Dto( ImdbId, genreId ) );
+                foreach( var imdbId in KnowForTitleIds ) {
+                    result.Add( new Dto( PersonId, imdbId.ParseImdbId( ImdbIdPrefix.Title ) ) );
                 }
                 return result;
             }

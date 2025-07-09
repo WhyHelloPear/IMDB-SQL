@@ -14,5 +14,15 @@
             RuntimeMinutes,
             Genres,
         }
+
+        public enum PersonIndices
+        {
+            PersonId = 0,
+            PrimaryName,
+            BirthYear,
+            DeathYear,
+            PrimaryProfession,
+            KnownForTitles
+        }
     }
 }

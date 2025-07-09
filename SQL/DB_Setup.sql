@@ -96,8 +96,16 @@ CREATE TABLE Person (
     BirthYear VARCHAR(4),
     DeathYear VARCHAR(4),
     PrimaryProfession VARCHAR(255),
-    KnownForTitles VARCHAR(255),
     Original_PersonImdbId VARCHAR(12) NOT NULL
+);
+
+CREATE TABLE PersonKnownForTitles (
+    PersonKnownForTitlesId INT AUTO_INCREMENT PRIMARY KEY,
+    ImdbId BIGINT NOT NULL,
+    PersonImdbId BIGINT NOT NULL,
+    CONSTRAINT uq_PersonKnownForTitles UNIQUE (ImdbId,PersonImdbId),
+    CONSTRAINT fk_PersonKnownForTitles_ImdbId FOREIGN KEY (ImdbId) REFERENCES MediaTitle(ImdbId),
+    CONSTRAINT fk_PersonKnownForTitles_PersonImdbId FOREIGN KEY (PersonImdbId) REFERENCES Person(PersonImdbId)
 );
 
 CREATE TABLE TitlePosition (
