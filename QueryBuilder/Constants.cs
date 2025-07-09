@@ -2,6 +2,21 @@
 {
     public static class Constants
     {
+        public enum TitleType
+        {
+            Short = 1,
+            Movie = 2,
+            TvShort = 3,
+            TvMovie = 4,
+            TvEpisode = 5,
+            TvSeries = 6,
+            TvMiniSeries = 7,
+            TvSpecial = 8,
+            Video = 9,
+            VideoGame = 10,
+            TvPilot = 11
+        }
+
         public enum TitlePositions
         {
             Director = 1,

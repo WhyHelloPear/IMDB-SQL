@@ -5,13 +5,27 @@ namespace IMDB_DB.Builders
 {
     internal class TitleBuilder : BaseBuilder
     {
+        private Dictionary<string, int> TitleTypeMappings = new Dictionary<string, int>{
+            { "short", (int)TitleType.Short },
+            { "movie", (int)TitleType.Movie },
+            { "tvshort", (int)TitleType.TvShort },
+            { "tvmovie", (int)TitleType.TvMovie },
+            { "tvepisode", (int)TitleType.TvEpisode },
+            { "tvseries", (int)TitleType.TvSeries },
+            { "tvminiseries", (int)TitleType.TvMiniSeries },
+            { "tvspecial", (int)TitleType.TvSpecial },
+            { "video", (int)TitleType.Video },
+            { "videogame", (int)TitleType.VideoGame },
+            { "tvpilot", (int)TitleType.TvPilot }
+        };
+
         private string TargetDataFile => $@"{_inputDataBaseDir}\{FileSchema.FileName}";
         public TitleBuilder( string outputDir, string inputDataFile, string fileName ) : base( outputDir, inputDataFile, fileName )
         {
             List<string> columnNames = new List<string> {
                 SqlSchemaInfo.ColumnNames.ImdbId,
                 SqlSchemaInfo.ColumnNames.Original_ImdbId,
-                SqlSchemaInfo.ColumnNames.TitleType,
+                SqlSchemaInfo.ColumnNames.TitleTypeId,
                 SqlSchemaInfo.ColumnNames.PrimaryTitle,
                 SqlSchemaInfo.ColumnNames.OriginalTitle,
                 SqlSchemaInfo.ColumnNames.IsAdult,
@@ -40,7 +54,7 @@ namespace IMDB_DB.Builders
                     continue;
                 }
 
-                valueBatch[sqlLineCount] = new Dto( line );
+                valueBatch[sqlLineCount] = new Dto( line, TitleTypeMappings );
                 sqlLineCount++;
 
                 if( sqlLineCount >= batchSize ) {
@@ -64,7 +78,7 @@ namespace IMDB_DB.Builders
                 List<string> values = new List<string> {
                     dto.ImdbId.ToString(),
                     dto.Original_ImdbId,
-                    dto.MediaType,
+                    dto.MediaTypeId.ToString(),
                     dto.PrimaryTitle,
                     dto.OriginalTitle,
                     dto.IsAdult ? "1" : "0",
@@ -101,7 +115,7 @@ namespace IMDB_DB.Builders
             public static class ColumnNames
             {
                 public const string ImdbId = "ImdbId";
-                public const string TitleType = "TitleType";
+                public const string TitleTypeId = "TitleTypeId";
                 public const string PrimaryTitle = "PrimaryTitle";
                 public const string OriginalTitle = "OriginalTitle";
                 public const string IsAdult = "IsAdult";
@@ -114,14 +128,13 @@ namespace IMDB_DB.Builders
 
         private class Dto
         {
-            public Dto( string dataLine )
+            public Dto( string dataLine, Dictionary<string, int> typeMappings )
             {
                 string[] t = dataLine.Split( DataParsing.DELIMITER );
 
                 ImdbId = t[(int)FileSchema.Indices.ImdbId].ParseImdbId( ImdbIdPrefix.Title );
                 Original_ImdbId = t[(int)FileSchema.Indices.ImdbId];
 
-                MediaType = t[(int)FileSchema.Indices.Type];
                 PrimaryTitle = t[(int)FileSchema.Indices.PrimaryTitle];
                 OriginalTitle = t[(int)FileSchema.Indices.OriginalTitle];
                 StartYear = t[(int)FileSchema.Indices.StartYear];
@@ -134,10 +147,13 @@ namespace IMDB_DB.Builders
                 if( int.TryParse( t[(int)FileSchema.Indices.RuntimeMinutes], out int runtime ) ) {
                     RuntimeMinutes = runtime;
                 }
+
+                string mediaType = t[(int)FileSchema.Indices.Type];
+                MediaTypeId = typeMappings[mediaType.ToLower()];
             }
 
             public long ImdbId { get; set; }
-            public string MediaType { get; set; }
+            public int MediaTypeId { get; set; }
             public string PrimaryTitle { get; set; }
             public string OriginalTitle { get; set; }
             public bool IsAdult { get; set; }

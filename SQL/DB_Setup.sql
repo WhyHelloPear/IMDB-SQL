@@ -41,16 +41,37 @@ VALUES
     (27, 'Reality-TV'),
     (28, 'Adult');
 
+CREATE TABLE TitleType (
+    TitleTypeId INT NOT NULL PRIMARY KEY,
+    TypeName VARCHAR(24) NOT NULL,
+    CONSTRAINT uq_TitleGenre UNIQUE (TypeName)
+);
+
+INSERT INTO TitleType (TitleTypeId, TypeName) 
+VALUES
+    (1, 'Short'),
+    (2, 'Movie'),
+    (3, 'TV Short'),
+    (4, 'TV Movie'),
+    (5, 'TV Episode'),
+    (6, 'TV Series'),
+    (7, 'TV Mini-Series'),
+    (8, 'TV Special'),
+    (9, 'Video'),
+    (10, 'Video Game'),
+    (11, 'TV Pilot');
+
 CREATE TABLE MediaTitle (
     ImdbId BIGINT PRIMARY KEY,
-    TitleType VARCHAR(32),
+    TitleTypeId INT NOT NULL,
     PrimaryTitle VARCHAR(255),
     OriginalTitle VARCHAR(255),
     IsAdult BOOLEAN,
     StartYear VARCHAR(4),
     EndYear VARCHAR(4) NULL,
     RuntimeMinutes BIGINT,
-    Original_ImdbId VARCHAR(12) NOT NULL
+    Original_ImdbId VARCHAR(12) NOT NULL,
+    CONSTRAINT fk_MediaTitle_TitleTypeId FOREIGN KEY (TitleTypeId) REFERENCES TitleType(TitleTypeId)
 );
 
 CREATE TABLE TitleGenreLink (

@@ -52,6 +52,7 @@ while( !isExitInput ) {
 
 async Task HandleUniqueValueChoice()
 {
+    string baseOutputDir = $@"{outputDir}\info";
     bool isExitInput = false;
     while( !isExitInput ) {
         var userMenuBuilder = new StringBuilder();
@@ -61,6 +62,7 @@ async Task HandleUniqueValueChoice()
         userMenuBuilder.AppendLine( "Choose an option:\n" );
         userMenuBuilder.AppendLine( "1. Professions" );
         userMenuBuilder.AppendLine( "2. Genres" );
+        userMenuBuilder.AppendLine( "3. Title Types" );
         userMenuBuilder.AppendLine( "0. Back" );
         userMenuBuilder.AppendLine( "\n=============================\n" );
         Console.WriteLine( userMenuBuilder.ToString() );
@@ -71,12 +73,16 @@ async Task HandleUniqueValueChoice()
                 isExitInput = true;
                 break;
             case "1":
-                var performance = new UniquePerformance( baseDataDir, $@"{outputDir}\info" );
+                var performance = new UniquePerformance( baseDataDir, baseOutputDir );
                 performance.FindUniqueProfessions();
                 break;
             case "2":
-                var genres = new UniqueGenres( baseDataDir, $@"{outputDir}\info" );
+                var genres = new UniqueGenres( baseDataDir, baseOutputDir );
                 genres.FindUniqueGenres();
+                break;
+            case "3":
+                var titleTypes = new UniqueTitleType( baseDataDir, baseOutputDir );
+                titleTypes.FindUniqueTitleTypes();
                 break;
             default:
                 Console.WriteLine( "Invalid option.\n\n" );
