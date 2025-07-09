@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using static IMDB_DB.Constants;
 
 namespace IMDB_DB
 {
@@ -62,7 +63,7 @@ namespace IMDB_DB
             var rowBuilder = new StringBuilder();
             rowBuilder.Append( "\t(" );
             foreach( var value in values ) {
-                string cleanedValue = $"'{value.Truncate( 255 ).Replace( @"\N", "NULL" ).Replace( @"\'", "'" ).Replace( @"/'", "'" ).Replace( "'", "''" )}'";
+                string cleanedValue = $"'{value.Truncate( 255 ).Replace( @"\N", "NULL" ).Replace( @"\'", "'" ).Replace( @"/'", "'" ).Replace( "'", "''" ).Replace( "\\\"", "\"" )}'";
                 cleanedValue = cleanedValue.Replace( @"'NULL'", "NULL" );
                 rowBuilder.Append( $" {cleanedValue}," );
             }
@@ -80,6 +81,14 @@ namespace IMDB_DB
             }
             var row = headerBuilder.ToString().TrimEnd( ',' );
             return $"{row} )\nVALUES";
+        }
+
+        public static string ReadyCharacterInput( this string input )
+        {
+            if( input == null || input.Length < 4 )
+                return DataParsing.NULL; // or throw an exception
+
+            return input.Substring( 2, input.Length - 4 );
         }
     }
 }

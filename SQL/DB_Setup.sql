@@ -35,28 +35,37 @@ CREATE TABLE Person (
     Original_PersonImdbId VARCHAR(12) NOT NULL
 );
 
-CREATE TABLE Performance (
-    PerformanceId INT AUTO_INCREMENT PRIMARY KEY,
-    ImdbId BIGINT NOT NULL,
-    PersonImdbId BIGINT NOT NULL,
-    Ordering INT NOT NULL,
-    Category VARCHAR(64) NOT NULL,
-    Job VARCHAR(255) NULL,
-    Characters VARCHAR(255) NULL,
-    CONSTRAINT fk_Performance_ImdbId FOREIGN KEY (ImdbId) REFERENCES MediaTitle(ImdbId),
-    CONSTRAINT fk_Performance_PersonImdbId FOREIGN KEY (PersonImdbId) REFERENCES Person(PersonImdbId)
-);
-
 CREATE TABLE TitlePosition (
     PositionId INT NOT NULL PRIMARY KEY,
     PositionName VARCHAR(128) NOT NULL,
     CONSTRAINT uq_TitlePosition UNIQUE (PositionName)
 );
 
+CREATE TABLE Performance (
+    PerformanceId INT AUTO_INCREMENT PRIMARY KEY,
+    ImdbId BIGINT NOT NULL,
+    PersonImdbId BIGINT NOT NULL,
+    PositionId INT NOT NULL,
+    Ordering INT NOT NULL,
+    PerformanceDescription VARCHAR(255) NULL,
+    CONSTRAINT fk_Performance_ImdbId FOREIGN KEY (ImdbId) REFERENCES MediaTitle(ImdbId),
+    CONSTRAINT fk_Performance_PersonImdbId FOREIGN KEY (PersonImdbId) REFERENCES Person(PersonImdbId),
+    CONSTRAINT fk_Performance_PositionId FOREIGN KEY (PositionId) REFERENCES TitlePosition(PositionId)
+);
+
 INSERT INTO TitlePosition (PositionId, PositionName)
 VALUES
     (1, 'Director'),
-    (2, 'Writer');
+    (2, 'Writer'),
+    (3, 'Producer'),
+    (4, 'Actor'),
+    (5, 'Cinematographer'),
+    (6, 'Composer'),
+    (7, 'Editor'),
+    (8, 'Production Designer'),
+    (9, 'Featured Subject'),
+    (10, 'Casting Director'),
+    (11, 'Voice');
 
 CREATE TABLE TitlePersonPosition (
     TitlePersonPositionId INT AUTO_INCREMENT PRIMARY KEY,
