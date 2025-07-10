@@ -15,7 +15,7 @@ Download IMDB datasets from here: https://developer.imdb.com/non-commercial-data
 - dbdiagram: https://dbdiagram.io/d/IMDB-SQL-686f1dacf413ba35082553b1
 - text schema: ```./general_sql_schema.txt```
 
-<img src="./IMDB_SQL.png" alt="IMDB SQL Schema" width="100%" >
+![IMDB SQL Schema](./IMDB_SQL.png "IMDB SQL Schema")
 
 ---
 
