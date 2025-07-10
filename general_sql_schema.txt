@@ -1,0 +1,103 @@
+Project IMDB_SQL {
+  database_type: 'MariaDB'
+}
+
+Table TitleGenre {
+  TitleGenreId INT [pk]
+  GenreName VARCHAR(24) [unique]
+}
+
+Table TitleType {
+  TitleTypeId INT [pk]
+  TypeName VARCHAR(24) [unique]
+}
+
+Table MediaTitle {
+  ImdbId BIGINT [pk]
+  TitleTypeId INT [not null, ref: > TitleType.TitleTypeId]
+  PrimaryTitle VARCHAR(255)
+  OriginalTitle VARCHAR(255)
+  IsAdult BOOLEAN
+  StartYear VARCHAR(4)
+  EndYear VARCHAR(4) [null]
+  RuntimeMinutes BIGINT
+  Original_ImdbId VARCHAR(12)
+}
+
+Table TitleGenreLink {
+  TitleGenreLinkId INT [pk]
+  TitleGenreId INT [not null, ref: > TitleGenre.TitleGenreId] 
+  ImdbId BIGINT [not null, ref: > MediaTitle.ImdbId]
+  indexes {
+    (ImdbId, TitleGenreId) [unique]
+  }
+}
+
+Table TitleRating {
+  RatingId int [pk]
+  ImdbId BIGINT [not null, unique, ref: > MediaTitle.ImdbId]
+  Rating DECIMAL(4,2)
+  NumVotes BIGINT
+}
+
+Table Person {
+  PersonImdbId BIGINT [pk]
+  PrimaryName VARCHAR(255)
+  BirthYear VARCHAR(4)
+  DeathYear VARCHAR(4)
+  PrimaryProfession VARCHAR(255)
+  Original_PersonImdbId VARCHAR(12) [not null]
+}
+
+Table PersonKnownForTitles {
+  PersonKnownForTitlesId INT [pk]
+  ImdbId BIGINT [not null, ref: > MediaTitle.ImdbId]
+  PersonImdbId BIGINT [not null, ref: > Person.PersonImdbId]
+  indexes {
+    (ImdbId, PersonImdbId) [unique]
+  }
+}
+
+Table TitlePosition {
+  PositionId INT [pk]
+  PositionName VARCHAR(128) [not null, unique]
+}
+
+Table Performance {
+  PerformanceId INT [pk]
+  ImdbId BIGINT [not null, ref: > MediaTitle.ImdbId]
+  PersonImdbId BIGINT [not null, ref: > Person.PersonImdbId]
+  PositionId INT [not null, ref: > TitlePosition.PositionId]
+  Ordering INT [not null]
+  PerformanceDescription VARCHAR(255) [null]
+}
+
+Table TitlePersonPosition {
+  TitlePersonPositionId INT [pk]
+  PositionId INT [not null, ref: > TitlePosition.PositionId]
+  PersonImdbId BIGINT [not null, ref: > Person.PersonImdbId]
+  ImdbId BIGINT [not null, ref: > MediaTitle.ImdbId]
+  indexes {
+    (ImdbId, PersonImdbId, PositionId) [unique]
+  }
+}
+
+Table TitleAlias {
+TitleAliasId INT [pk]
+ImdbId BIGINT [not null, ref: > MediaTitle.ImdbId]
+Ordering INT [not null]
+TitleAlias VARCHAR(255) [not null]
+AliasRegion VARCHAR(56) [null]
+AliasLanguage VARCHAR(128) [null]
+AliasType VARCHAR(255) [null]
+AliasAttributes VARCHAR(255) [null]
+IsOriginalTitle BOOLEAN [not null]
+}
+
+TABLE TitleEpisode {
+  TitleEpisodeId INT [pk]
+  EpisodeImdbId BIGINT [not null, ref: > MediaTitle.ImdbId]
+  SeriesImdbId BIGINT [not null, ref: > MediaTitle.ImdbId]
+  SeasonNumber INT [null]
+  EpisodeNumber INT [null] 
+}

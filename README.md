@@ -9,6 +9,16 @@ Download IMDB datasets from here: https://developer.imdb.com/non-commercial-data
 - title.principals.tsv &#9745;
 - title.ratings.tsv &#9745;
 
+
+### SQL Schema
+
+- dbdiagram: https://dbdiagram.io/d/IMDB-SQL-686f1dacf413ba35082553b1
+- text schema: ```./general_sql_schema.txt```
+
+<img src="./IMDB_SQL.png" alt="IMDB SQL Schema" width="80%" style="display: block; margin: auto;" >
+
+---
+
 # How to Setup
 
 1. Create ___secrets.env___ file in base directory

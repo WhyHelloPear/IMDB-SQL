@@ -78,6 +78,7 @@ CREATE TABLE TitleGenreLink (
     TitleGenreLinkId INT AUTO_INCREMENT PRIMARY KEY,
     ImdbId BIGINT NOT NULL,
     TitleGenreId INT NOT NULL,
+    CONSTRAINT uq_TitleGenreLink UNIQUE (ImdbId,TitleGenreId),
     CONSTRAINT fk_TitleGenreLink_ImdbId FOREIGN KEY (ImdbId) REFERENCES MediaTitle(ImdbId),
     CONSTRAINT fk_TitleGenreLink_TitleGenreId FOREIGN KEY (TitleGenreId) REFERENCES TitleGenre(TitleGenreId)
 );
@@ -87,6 +88,7 @@ CREATE TABLE TitleRating (
     ImdbId BIGINT NOT NULL,
     Rating DECIMAL(4,2) UNSIGNED,
     NumVotes BIGINT,
+    CONSTRAINT uq_TitleRating UNIQUE (ImdbId),
     CONSTRAINT fk_TitleRating_ImdbId FOREIGN KEY (ImdbId) REFERENCES MediaTitle(ImdbId)
 );
 
