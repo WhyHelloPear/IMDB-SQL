@@ -156,7 +156,7 @@ void HandlePrepareScriptsChoice()
 
 async Task HandleInsertScriptsChoice()
 {
-    var factory = new InsertFactory( IMDB_ConnectionString, outputDir );
+    var factory = new InsertFactory( IMDB_ConnectionString );
 
     bool isExitInput = false;
     while( !isExitInput ) {
@@ -186,56 +186,35 @@ async Task HandleInsertScriptsChoice()
                 isExitInput = true;
                 break;
             case "1":
-                errors = await factory.InsertTitlesSql();
-                WriteErrorsToConsole( errors );
+                await factory.InsertScriptsFromDir( @$"{outputDir}\titles" );
                 break;
             case "2":
-                errors = await factory.InsertPersonsSql();
-                WriteErrorsToConsole( errors );
+                await factory.InsertScriptsFromDir( @$"{outputDir}\persons" );
                 break;
             case "3":
-                errors = await factory.InsertPerformancesSql();
-                WriteErrorsToConsole( errors );
+                await factory.InsertScriptsFromDir( @$"{outputDir}\performances" );
                 break;
             case "4":
-                errors = await factory.InsertPersonPositionSql();
-                WriteErrorsToConsole( errors );
+                await factory.InsertScriptsFromDir( @$"{outputDir}\personPosition" );
                 break;
             case "5":
-                errors = await factory.InsertAliasSql();
-                WriteErrorsToConsole( errors );
+                await factory.InsertScriptsFromDir( @$"{outputDir}\titleAlias" );
                 break;
             case "6":
-                errors = await factory.InsertRatingsSql();
-                WriteErrorsToConsole( errors );
+                await factory.InsertScriptsFromDir( @$"{outputDir}\ratings" );
                 break;
             case "7":
-                errors = await factory.InsertEpisodesSql();
-                WriteErrorsToConsole( errors );
+                await factory.InsertScriptsFromDir( @$"{outputDir}\episodes" );
                 break;
             case "8":
-                errors = await factory.InsertGenreLinksSql();
-                WriteErrorsToConsole( errors );
+                await factory.InsertScriptsFromDir( @$"{outputDir}\genreLinks" );
                 break;
-            case "9": 
-                errors = await factory.InsertKnownForTitlesSql();
-                WriteErrorsToConsole( errors );
+            case "9":
+                await factory.InsertScriptsFromDir( @$"{outputDir}\knownForTitles" );
                 break;
             default:
                 Console.WriteLine( "Invalid option.\n\n" );
                 break;
         }
     }
-}
-
-void WriteErrorsToConsole( List<string> errors )
-{
-    var errorBuilder = new StringBuilder();
-    errorBuilder.AppendLine( "Errors from inserts:" );
-
-    foreach( var error in errors ) {
-        errorBuilder.AppendLine( error );
-    }
-
-    Console.WriteLine( errorBuilder.ToString() );
 }
